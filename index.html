@@ -411,6 +411,19 @@
       </div>
 
       <div id="mode-iso3d" style="display:none;">
+             <div class="diagram-card">
+            <div class="diagram-header">
+              <span>3D ISO-visning</span>
+              <div class="view-actions">
+                <button class="mini-btn" id="fitViewBtn" title="Passa modellen i rutan">Passa</button>
+                <button class="mini-btn" id="resetViewBtn" title="Återställ zoom/pan">Återställ</button>
+                <span class="badge">Zoom: scroll/pinch • Pan: dra</span>
+              </div>
+            </div>
+            <canvas id="isoCanvas" width="600" height="360"
+              style="width:100%; height:auto; border-radius:12px; display:block;
+                     background:#020617; border:1px solid rgba(148,163,184,0.3);"></canvas>
+          </div>
         <div class="iso-controls">
           <div class="iso-row">
             <div>
@@ -488,19 +501,7 @@ UP 30</textarea>
             <div class="results-row"><span class="label">Total längd (3D):</span><span class="value" id="isoLen">–</span></div>
           </div>
 
-          <div class="diagram-card">
-            <div class="diagram-header">
-              <span>3D ISO-visning</span>
-              <div class="view-actions">
-                <button class="mini-btn" id="fitViewBtn" title="Passa modellen i rutan">Passa</button>
-                <button class="mini-btn" id="resetViewBtn" title="Återställ zoom/pan">Återställ</button>
-                <span class="badge">Zoom: scroll/pinch • Pan: dra</span>
-              </div>
-            </div>
-            <canvas id="isoCanvas" width="600" height="360"
-              style="width:100%; height:auto; border-radius:12px; display:block;
-                     background:#020617; border:1px solid rgba(148,163,184,0.3);"></canvas>
-          </div>
+     
         </div>
       </div>
     </section>
