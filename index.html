@@ -377,10 +377,9 @@
     touch-action: none;
   }
   @media (max-width: 520px){
-    #isoCanvas { aspect-ratio: 4 / 3; } /* lite högre, men inte för mycket */
+    #isoCanvas { aspect-ratio: 4 / 3; }
   }
 
-  /* Sticky bara på mobil, och bara när den syns (den ligger ändå i ISO-läget) */
   @media (max-width: 520px){
     .iso-canvas-card {
       position: sticky;
@@ -448,6 +447,7 @@
             <span>3D ISO-visning</span>
             <div class="view-actions">
               <button class="mini-btn" id="fitViewBtn" title="Passa modellen i rutan">Passa</button>
+              <button class="mini-btn" id="rotateViewBtn" title="Rotera vyn 90°">Rotera 90°</button>
               <button class="mini-btn" id="resetViewBtn" title="Återställ zoom/pan">Återställ</button>
               <span class="badge">Zoom: scroll/pinch • Pan: dra</span>
             </div>
@@ -565,13 +565,12 @@ UP 30</textarea>
 
 <script>
   // =========================
-  // NEW: Stoppa pinch-zoom + dubbeltrycks-zoom (iOS Safari)
+  // Stoppa pinch-zoom + dubbeltrycks-zoom (iOS Safari)
   // =========================
   document.addEventListener('gesturestart',  (e) => e.preventDefault(), { passive: false });
   document.addEventListener('gesturechange', (e) => e.preventDefault(), { passive: false });
   document.addEventListener('gestureend',    (e) => e.preventDefault(), { passive: false });
 
-  // Extra skydd mot dubbel-tap zoom på iOS
   let __lastTouchEnd = 0;
   document.addEventListener('touchend', (e) => {
     const now = Date.now();
@@ -767,6 +766,7 @@ UP 30</textarea>
   const ctxIso = isoCanvas ? isoCanvas.getContext("2d") : null;
 
   const fitViewBtn = document.getElementById("fitViewBtn");
+  const rotateViewBtn = document.getElementById("rotateViewBtn");
   const resetViewBtn = document.getElementById("resetViewBtn");
 
   const offsetEnabled = document.getElementById("offsetEnabled");
@@ -777,9 +777,6 @@ UP 30</textarea>
 
   const COS30 = Math.cos(Math.PI / 6);
   const SIN30 = Math.sin(Math.PI / 6);
-
-  // NEW: Mini-HUD box (kompass) uppe till vänster
-  const MINI_HUD = { x: 10, y: 10, w: 88, h: 64 }; // CSS-pixlar
 
   const dirMap = {
     E:   { dx:  1, dy:  0, dz:  0 },
@@ -794,10 +791,58 @@ UP 30</textarea>
 
   function degToRad(d){ return d * Math.PI / 180; }
 
-  function projectIso(p) {
+  // ---- VIEW STATE (inkl rotation) ----
+  const view = {
+    baseScale: 1,
+    baseCx: 0,
+    baseCy: 0,
+    zoom: 1,
+    panX: 0,
+    panY: 0,
+    rot: 0, // 0..3 (90° steg runt Z)
+  };
+
+  function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+
+  function ensureCanvasDpr() {
+    if (!isoCanvas || !ctxIso) return { w: 0, h: 0, dpr: 1 };
+    const rect = isoCanvas.getBoundingClientRect();
+    const cssW = Math.max(1, Math.round(rect.width));
+    const cssH = Math.max(1, Math.round(rect.height));
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+
+    const targetW = Math.round(cssW * dpr);
+    const targetH = Math.round(cssH * dpr);
+
+    if (isoCanvas.width !== targetW || isoCanvas.height !== targetH) {
+      isoCanvas.width = targetW;
+      isoCanvas.height = targetH;
+    }
+
+    ctxIso.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { w: cssW, h: cssH, dpr };
+  }
+
+  // ---- Rotation runt Z (vy-rotation) ----
+  function rotateZ90(p, rotSteps){
+    const r = ((rotSteps % 4) + 4) % 4;
+    if (r === 0) return { x: p.x,  y: p.y,  z: p.z };
+    if (r === 1) return { x: p.y,  y: -p.x, z: p.z };
+    if (r === 2) return { x: -p.x, y: -p.y, z: p.z };
+    return           { x: -p.y, y: p.x,  z: p.z }; // r===3
+  }
+
+  // ---- ISO-projektion (bas) ----
+  function projectIsoRaw(p) {
     const sx = (p.x - p.y) * COS30;
     const sy = (p.x + p.y) * SIN30 - p.z;
     return { x: sx, y: sy };
+  }
+
+  // ---- ISO-projektion med vy-rotation ----
+  function projectIso(p3d) {
+    const pr = rotateZ90(p3d, view.rot);
+    return projectIsoRaw(pr);
   }
 
   function polylineLength3d(pts) {
@@ -825,36 +870,6 @@ UP 30</textarea>
     ctx.arcTo(x,   y+h, x,   y,   rr);
     ctx.arcTo(x,   y,   x+w, y,   rr);
     ctx.closePath();
-  }
-
-  const view = {
-    baseScale: 1,
-    baseCx: 0,
-    baseCy: 0,
-    zoom: 1,
-    panX: 0,
-    panY: 0,
-  };
-
-  function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
-
-  function ensureCanvasDpr() {
-    if (!isoCanvas || !ctxIso) return { w: 0, h: 0, dpr: 1 };
-    const rect = isoCanvas.getBoundingClientRect();
-    const cssW = Math.max(1, Math.round(rect.width));
-    const cssH = Math.max(1, Math.round(rect.height));
-    const dpr = Math.max(1, window.devicePixelRatio || 1);
-
-    const targetW = Math.round(cssW * dpr);
-    const targetH = Math.round(cssH * dpr);
-
-    if (isoCanvas.width !== targetW || isoCanvas.height !== targetH) {
-      isoCanvas.width = targetW;
-      isoCanvas.height = targetH;
-    }
-
-    ctxIso.setTransform(dpr, 0, 0, dpr, 0, 0);
-    return { w: cssW, h: cssH, dpr };
   }
 
   function buildOffsetStep(dir, angDeg, offMm) {
@@ -1014,123 +1029,109 @@ UP 30</textarea>
   fitViewBtn.addEventListener("click", () => { fitView(true); drawIso(); });
   resetViewBtn.addEventListener("click", resetView);
 
-function drawMiniAxes() {
-  if (!ctxIso) return;
+  // NEW: Rotera vyn 90° (påverkar även redan ritade steg)
+  rotateViewBtn.addEventListener("click", () => {
+    view.rot = (view.rot + 1) % 4;
+    fitView(true);
+    drawIso();
+  });
 
-  const { w, h } = ensureCanvasDpr();
+  function drawMiniAxes() {
+    if (!ctxIso) return;
 
-  // HUD-box (uppe vänster)
-  const s = Math.min(1, Math.max(0.72, Math.min(w / 420, h / 280)));
-  const x = 10;
-  const y = 10;
-  const boxW = 92 * s;
-  const boxH = 66 * s;
-  const pad = 10 * s;
+    const { w, h } = ensureCanvasDpr();
 
-  // 3D axellängd i "mm-enheter" (bara för kompassen)
-  const axisLen = 80;
+    const s = Math.min(1, Math.max(0.72, Math.min(w / 420, h / 280)));
+    const x = 10;
+    const y = 10;
+    const boxW = 92 * s;
+    const boxH = 66 * s;
+    const pad = 10 * s;
 
-  // Projektionspunkter (i "proj-koord")
-  const O = projectIso({ x: 0, y: 0, z: 0 });
-  const E = projectIso({ x: axisLen, y: 0, z: 0 });
-  const N = projectIso({ x: 0, y: axisLen, z: 0 });
-  const U = projectIso({ x: 0, y: 0, z: axisLen });
+    const axisLen = 80;
 
-  // Bounding box för att kunna skala/centrera
-  const pts = [O, E, N, U];
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-  for (const p of pts) {
-    minX = Math.min(minX, p.x);
-    maxX = Math.max(maxX, p.x);
-    minY = Math.min(minY, p.y);
-    maxY = Math.max(maxY, p.y);
-  }
+    const O = projectIso({ x: 0, y: 0, z: 0 });
+    const E = projectIso({ x: axisLen, y: 0, z: 0 });
+    const N = projectIso({ x: 0, y: axisLen, z: 0 });
+    const U = projectIso({ x: 0, y: 0, z: axisLen });
 
-  const spanX = Math.max(maxX - minX, 1e-6);
-  const spanY = Math.max(maxY - minY, 1e-6);
+    const pts = [O, E, N, U];
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const p of pts) {
+      minX = Math.min(minX, p.x);
+      maxX = Math.max(maxX, p.x);
+      minY = Math.min(minY, p.y);
+      maxY = Math.max(maxY, p.y);
+    }
 
-  // Skala så allt får plats i rutan med padding
-  const k = Math.min((boxW - 2 * pad) / spanX, (boxH - 2 * pad) / spanY);
+    const spanX = Math.max(maxX - minX, 1e-6);
+    const spanY = Math.max(maxY - minY, 1e-6);
 
-  // Centrera innehållet
-  const midX = (minX + maxX) / 2;
-  const midY = (minY + maxY) / 2;
-  const cx = x + boxW / 2;
-  const cy = y + boxH / 2;
+    const k = Math.min((boxW - 2 * pad) / spanX, (boxH - 2 * pad) / spanY);
 
-  function toHud(p) {
-    return {
-      x: cx + (p.x - midX) * k,
-      y: cy + (p.y - midY) * k
-    };
-  }
+    const midX = (minX + maxX) / 2;
+    const midY = (minY + maxY) / 2;
+    const cx = x + boxW / 2;
+    const cy = y + boxH / 2;
 
-  const cO = toHud(O), cE = toHud(E), cN = toHud(N), cU = toHud(U);
+    function toHud(p) {
+      return {
+        x: cx + (p.x - midX) * k,
+        y: cy + (p.y - midY) * k
+      };
+    }
 
-  ctxIso.save();
+    const cO = toHud(O), cE = toHud(E), cN = toHud(N), cU = toHud(U);
 
-  // Bakgrund (så rutnätet inte stör)
-  ctxIso.fillStyle = "rgba(2,6,23,0.88)";
-  ctxIso.strokeStyle = "rgba(148,163,184,0.18)";
-  ctxIso.lineWidth = 1;
-  roundRectPath(ctxIso, x, y, boxW, boxH, 10 * s);
-  ctxIso.fill();
-  ctxIso.stroke();
+    ctxIso.save();
 
-  // Axlar – renare
-  ctxIso.lineCap = "round";
-  ctxIso.lineJoin = "round";
-  ctxIso.lineWidth = 2.2 * s;
-
-  // E (cyan)
-  ctxIso.strokeStyle = "#38bdf8";
-  ctxIso.beginPath();
-  ctxIso.moveTo(cO.x, cO.y);
-  ctxIso.lineTo(cE.x, cE.y);
-  ctxIso.stroke();
-
-  // N (grön)
-  ctxIso.strokeStyle = "#22c55e";
-  ctxIso.beginPath();
-  ctxIso.moveTo(cO.x, cO.y);
-  ctxIso.lineTo(cN.x, cN.y);
-  ctxIso.stroke();
-
-  // UP (orange)
-  ctxIso.strokeStyle = "#f97316";
-  ctxIso.beginPath();
-  ctxIso.moveTo(cO.x, cO.y);
-  ctxIso.lineTo(cU.x, cU.y);
-  ctxIso.stroke();
-
-  // Labels med liten platta bakom
-  ctxIso.font = `${10 * s}px system-ui`;
-  ctxIso.textBaseline = "middle";
-  ctxIso.textAlign = "left";
-
-  function label(text, tx, ty) {
-    const padX = 4 * s, padY = 2 * s;
-    const tw = ctxIso.measureText(text).width;
-    const bw = tw + padX * 2;
-    const bh = 14 * s;
-
-    ctxIso.fillStyle = "rgba(2,6,23,0.90)";
-    ctxIso.strokeStyle = "rgba(148,163,184,0.16)";
+    ctxIso.fillStyle = "rgba(2,6,23,0.88)";
+    ctxIso.strokeStyle = "rgba(148,163,184,0.18)";
     ctxIso.lineWidth = 1;
-    roundRectPath(ctxIso, tx - padX, ty - bh / 2, bw, bh, 6 * s);
+    roundRectPath(ctxIso, x, y, boxW, boxH, 10 * s);
     ctxIso.fill();
     ctxIso.stroke();
 
-    ctxIso.fillStyle = "#e5e7eb";
-    ctxIso.fillText(text, tx, ty);
+    ctxIso.lineCap = "round";
+    ctxIso.lineJoin = "round";
+    ctxIso.lineWidth = 2.2 * s;
+
+    ctxIso.strokeStyle = "#38bdf8";
+    ctxIso.beginPath(); ctxIso.moveTo(cO.x, cO.y); ctxIso.lineTo(cE.x, cE.y); ctxIso.stroke();
+
+    ctxIso.strokeStyle = "#22c55e";
+    ctxIso.beginPath(); ctxIso.moveTo(cO.x, cO.y); ctxIso.lineTo(cN.x, cN.y); ctxIso.stroke();
+
+    ctxIso.strokeStyle = "#f97316";
+    ctxIso.beginPath(); ctxIso.moveTo(cO.x, cO.y); ctxIso.lineTo(cU.x, cU.y); ctxIso.stroke();
+
+    ctxIso.font = `${10 * s}px system-ui`;
+    ctxIso.textBaseline = "middle";
+    ctxIso.textAlign = "left";
+
+    function label(text, tx, ty) {
+      const padX = 4 * s, padY = 2 * s;
+      const tw = ctxIso.measureText(text).width;
+      const bw = tw + padX * 2;
+      const bh = 14 * s;
+
+      ctxIso.fillStyle = "rgba(2,6,23,0.90)";
+      ctxIso.strokeStyle = "rgba(148,163,184,0.16)";
+      ctxIso.lineWidth = 1;
+      roundRectPath(ctxIso, tx - padX, ty - bh / 2, bw, bh, 6 * s);
+      ctxIso.fill();
+      ctxIso.stroke();
+
+      ctxIso.fillStyle = "#e5e7eb";
+      ctxIso.fillText(text, tx, ty);
+    }
+
+    label("UP", cU.x + 6 * s, cU.y);
+    label("E",  cE.x + 6 * s, cE.y);
+    label("N",  cN.x - 16 * s, cN.y);
+
+    ctxIso.restore();
   }
-
-  label("UP", cU.x + 6 * s, cU.y);
-  label("E",  cE.x + 6 * s, cE.y);
-  label("N",  cN.x - 16 * s, cN.y);
-
-  ctxIso.restore();
-}
 
   function drawSegmentLabel(ctx, x1, y1, x2, y2, text) {
     const mx = (x1 + x2) / 2;
@@ -1173,6 +1174,7 @@ function drawMiniAxes() {
   function drawIsoGrid(ctx, pts3d, toCanvas, w, h) {
     if (!ctx || !pts3d || pts3d.length < 1) return;
 
+    // Grid baseras på 3D-bounds, men ritas via projectIso() (som redan tar hänsyn till rotation)
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     for (const p of pts3d) {
       minX = Math.min(minX, p.x);
@@ -1366,7 +1368,6 @@ function drawMiniAxes() {
 
       drawSegmentLabel(ctxIso, a.x, a.y, b.x, b.y, `${mm.toFixed(1)} mm`);
     }
-
   }
 
   function readNum(el){ return parseFloat(String(el.value).replace(",", ".")); }
