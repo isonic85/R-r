@@ -25,7 +25,7 @@
 
   .app {
     width: 100%;
-    max-width: 900px;
+    max-width: 780px;
     background: rgba(15, 23, 42, 0.96);
     border-radius: 18px;
     padding: 18px 18px 14px;
@@ -52,6 +52,9 @@
   @media (max-width: 780px) {
     .layout { grid-template-columns: 1fr; }
   }
+
+  /* När ISO är aktiv vill vi att vänster tar hela bredden (illustration göms) */
+  .layout.iso-only { grid-template-columns: 1fr; }
 
   .mode-tabs {
     display: inline-flex;
@@ -137,7 +140,6 @@
     box-shadow: 0 10px 25px rgba(22, 163, 74, 0.4);
     transform: translateY(-1px);
   }
-
   button.calc:active { transform: translateY(0); box-shadow: none; }
 
   .results {
@@ -183,6 +185,8 @@
     display:flex;
     gap:8px;
     align-items:center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
   .mini-btn{
@@ -197,6 +201,15 @@
   }
   .mini-btn:hover{ border-color:#38bdf8; }
 
+  .badge {
+    font-size: 0.7rem;
+    padding: 2px 7px;
+    border-radius: 999px;
+    border: 1px solid #4b5563;
+    color: #9ca3af;
+    white-space: nowrap;
+  }
+
   svg {
     width: 100%;
     height: auto;
@@ -210,15 +223,6 @@
   .leg.vertical   { stroke: #38bdf8; }
   .hyp { stroke: #f97316; stroke-width: 3; fill: none; }
   .point { fill: #e5e7eb; stroke: #020617; stroke-width: 1.2; }
-
-  .badge {
-    font-size: 0.7rem;
-    padding: 2px 7px;
-    border-radius: 999px;
-    border: 1px solid #4b5563;
-    color: #9ca3af;
-    white-space: nowrap;
-  }
 
   .dim-text {
     font-size: 9px;
@@ -355,7 +359,29 @@
     .offset-grid{ grid-template-columns: 1fr; }
   }
 
-  #isoCanvas { touch-action: none; }
+  /* Canvas: vi styr höjd via aspect-ratio (lite högre på mobil) */
+  #isoCanvas {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 12px;
+    background:#020617;
+    border:1px solid rgba(148,163,184,0.3);
+    aspect-ratio: 5 / 3;
+    touch-action: none;
+  }
+  @media (max-width: 520px){
+    #isoCanvas { aspect-ratio: 4 / 3; } /* lite högre, men inte för mycket */
+  }
+
+  /* Sticky bara på mobil, och bara när den syns (den ligger ändå i ISO-läget) */
+  @media (max-width: 520px){
+    .iso-canvas-card {
+      position: sticky;
+      top: 8px;
+      z-index: 20;
+    }
+  }
 
   @media (max-width: 480px) {
     h1 { font-size: 1.1rem; }
@@ -372,7 +398,7 @@
   <h1>Rörbockning med Farbror Niklas</h1>
   <div class="subtitle">Beräkna rörlängd, vinkel och horisontell förskjutning från en referenspunkt.</div>
 
-  <div class="layout">
+  <div class="layout" id="layoutRoot">
     <section>
       <div class="mode-tabs">
         <button class="tab-btn active" data-mode="heightAngle">Höjd + vinkel (som ritningen)</button>
@@ -411,19 +437,19 @@
       </div>
 
       <div id="mode-iso3d" style="display:none;">
-             <div class="diagram-card">
-            <div class="diagram-header">
-              <span>3D ISO-visning</span>
-              <div class="view-actions">
-                <button class="mini-btn" id="fitViewBtn" title="Passa modellen i rutan">Passa</button>
-                <button class="mini-btn" id="resetViewBtn" title="Återställ zoom/pan">Återställ</button>
-                <span class="badge">Zoom: scroll/pinch • Pan: dra</span>
-              </div>
+        <!-- Modellen direkt under flikarna (som du ville) -->
+        <div class="diagram-card iso-canvas-card">
+          <div class="diagram-header">
+            <span>3D ISO-visning</span>
+            <div class="view-actions">
+              <button class="mini-btn" id="fitViewBtn" title="Passa modellen i rutan">Passa</button>
+              <button class="mini-btn" id="resetViewBtn" title="Återställ zoom/pan">Återställ</button>
+              <span class="badge">Zoom: scroll/pinch • Pan: dra</span>
             </div>
-            <canvas id="isoCanvas" width="600" height="360"
-              style="width:100%; height:auto; border-radius:12px; display:block;
-                     background:#020617; border:1px solid rgba(148,163,184,0.3);"></canvas>
           </div>
+          <canvas id="isoCanvas" width="600" height="360" aria-label="3D ISO canvas"></canvas>
+        </div>
+
         <div class="iso-controls">
           <div class="iso-row">
             <div>
@@ -500,13 +526,12 @@ UP 30</textarea>
             <div class="results-row"><span class="label">Antal punkter:</span><span class="value" id="isoCount">–</span></div>
             <div class="results-row"><span class="label">Total längd (3D):</span><span class="value" id="isoLen">–</span></div>
           </div>
-
-     
         </div>
       </div>
     </section>
 
-    <section class="diagram-card">
+    <!-- Illustration-panelen (ska döljas i ISO-läget) -->
+    <section class="diagram-card" id="illustrationPanel">
       <div class="diagram-header">
         <span>Illustration</span>
         <span class="badge">0-punkt = skärning streckad/grön</span>
@@ -536,20 +561,31 @@ UP 30</textarea>
 
 <script>
   // -------------------------
-  // Tabs
+  // Tabs + layout-hantering
   // -------------------------
   const modeButtons = document.querySelectorAll(".tab-btn");
   const modeHeightAngleEl = document.getElementById("mode-heightAngle");
   const modeHowtoEl = document.getElementById("mode-howto");
   const modeIso3dEl = document.getElementById("mode-iso3d");
+  const illustrationPanel = document.getElementById("illustrationPanel");
+  const layoutRoot = document.getElementById("layoutRoot");
 
   function showMode(mode){
     modeHeightAngleEl.style.display = (mode === "heightAngle") ? "" : "none";
     modeHowtoEl.style.display      = (mode === "howto") ? "" : "none";
     modeIso3dEl.style.display      = (mode === "iso3d") ? "" : "none";
 
+    // Dölj illustration när ISO är aktiv + ge full bredd
+    const isoActive = (mode === "iso3d");
+    illustrationPanel.style.display = isoActive ? "none" : "";
+    layoutRoot.classList.toggle("iso-only", isoActive);
+
     if (mode === "heightAngle") calculateHeightAngle();
-    if (mode === "iso3d") { syncStepsFromTextarea(); fitView(true); drawIso(); }
+    if (mode === "iso3d") {
+      syncStepsFromTextarea();
+      fitView(false);
+      drawIso();
+    }
   }
 
   modeButtons.forEach(btn => {
@@ -695,7 +731,7 @@ UP 30</textarea>
   angle2Input.addEventListener("input", calculateHeightAngle);
 
   // -------------------------
-  // ISO + Offset + View
+  // ISO + Offset + Grid + View + High-DPI canvas resize
   // -------------------------
   const stepMmInput = document.getElementById("stepMm");
   const stepBtns = document.querySelectorAll(".iso-btn");
@@ -768,6 +804,39 @@ UP 30</textarea>
     ctx.arcTo(x,   y+h, x,   y,   rr);
     ctx.arcTo(x,   y,   x+w, y,   rr);
     ctx.closePath();
+  }
+
+  // --- View state (i CSS-pixlar)
+  const view = {
+    baseScale: 1,
+    baseCx: 0,
+    baseCy: 0,
+    zoom: 1,
+    panX: 0,
+    panY: 0,
+  };
+
+  function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+
+  // Viktigt: vi ritar i CSS-pixlar men canvas är dpr-skalad
+  function ensureCanvasDpr() {
+    if (!isoCanvas || !ctxIso) return { w: 0, h: 0, dpr: 1 };
+    const rect = isoCanvas.getBoundingClientRect();
+    const cssW = Math.max(1, Math.round(rect.width));
+    const cssH = Math.max(1, Math.round(rect.height));
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+
+    const targetW = Math.round(cssW * dpr);
+    const targetH = Math.round(cssH * dpr);
+
+    if (isoCanvas.width !== targetW || isoCanvas.height !== targetH) {
+      isoCanvas.width = targetW;
+      isoCanvas.height = targetH;
+    }
+
+    // RITA I CSS-KOORDINATER
+    ctxIso.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { w: cssW, h: cssH, dpr };
   }
 
   function buildOffsetStep(dir, angDeg, offMm) {
@@ -883,31 +952,11 @@ UP 30</textarea>
     renderStepsList();
   }
 
-  // -------------------------
-  // VIEW STATE (Zoom/Pan/Fit/Reset)
-  // -------------------------
-  const view = {
-    baseScale: 1,
-    baseCx: 0,
-    baseCy: 0,
-    zoom: 1,
-    panX: 0,
-    panY: 0,
-  };
-
-  function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
-
-  function getCanvasPointFromEvent(e){
-    const r = isoCanvas.getBoundingClientRect();
-    const x = (e.clientX - r.left) * (isoCanvas.width / r.width);
-    const y = (e.clientY - r.top)  * (isoCanvas.height / r.height);
-    return { x, y };
-  }
-
   function fitView(keepUserZoom=false){
     const parsed = parseSteps(points3dInput.value);
     if (!parsed || parsed.length < 1) return;
 
+    const { w, h } = ensureCanvasDpr();
     const pts = stepsToPoints(parsed);
     const proj = pts.map(projectIso);
 
@@ -923,9 +972,6 @@ UP 30</textarea>
     const spanY = Math.max(maxY - minY, 1e-6);
 
     const pad = 36;
-    const w = isoCanvas.width;
-    const h = isoCanvas.height;
-
     const s = Math.min((w - 2*pad) / spanX, (h - 2*pad) / spanY);
 
     const midX = (minX + maxX) / 2;
@@ -950,119 +996,9 @@ UP 30</textarea>
   fitViewBtn.addEventListener("click", () => { fitView(true); drawIso(); });
   resetViewBtn.addEventListener("click", resetView);
 
-  isoCanvas.addEventListener("wheel", (e) => {
-    e.preventDefault();
-    const p = getCanvasPointFromEvent(e);
-
-    const oldZoom = view.zoom;
-    const zoomFactor = Math.exp((-e.deltaY) * 0.0015);
-    const newZoom = clamp(oldZoom * zoomFactor, 0.2, 8);
-
-    const kOld = view.baseScale * oldZoom;
-    const kNew = view.baseScale * newZoom;
-
-    const wx = (p.x - view.baseCx - view.panX) / kOld;
-    const wy = (p.y - view.baseCy - view.panY) / kOld;
-
-    view.zoom = newZoom;
-    view.panX = p.x - view.baseCx - wx * kNew;
-    view.panY = p.y - view.baseCy - wy * kNew;
-
-    drawIso();
-  }, { passive:false });
-
-  const pointers = new Map();
-  let dragStart = null;
-  let pinchStart = null;
-
-  function getCenterAndDist(){
-    const pts = Array.from(pointers.values());
-    if (pts.length < 2) return null;
-    const a = pts[0], b = pts[1];
-    const cx = (a.x + b.x) / 2;
-    const cy = (a.y + b.y) / 2;
-    const dist = Math.hypot(b.x - a.x, b.y - a.y);
-    return { cx, cy, dist };
-  }
-
-  isoCanvas.addEventListener("pointerdown", (e) => {
-    isoCanvas.setPointerCapture(e.pointerId);
-    const p = getCanvasPointFromEvent(e);
-    pointers.set(e.pointerId, p);
-
-    if (pointers.size === 1) {
-      dragStart = { x: p.x, y: p.y, panX: view.panX, panY: view.panY };
-      pinchStart = null;
-    } else if (pointers.size === 2) {
-      const cd = getCenterAndDist();
-      if (!cd) return;
-      pinchStart = {
-        dist: cd.dist,
-        zoom: view.zoom,
-        cx: cd.cx,
-        cy: cd.cy,
-        panX: view.panX,
-        panY: view.panY
-      };
-      dragStart = null;
-    }
-  });
-
-  isoCanvas.addEventListener("pointermove", (e) => {
-    if (!pointers.has(e.pointerId)) return;
-    const p = getCanvasPointFromEvent(e);
-    pointers.set(e.pointerId, p);
-
-    if (pointers.size === 1 && dragStart) {
-      view.panX = dragStart.panX + (p.x - dragStart.x);
-      view.panY = dragStart.panY + (p.y - dragStart.y);
-      drawIso();
-    } else if (pointers.size === 2 && pinchStart) {
-      const cd = getCenterAndDist();
-      if (!cd) return;
-
-      const zoomFactor = cd.dist / Math.max(pinchStart.dist, 1e-6);
-      const newZoom = clamp(pinchStart.zoom * zoomFactor, 0.2, 8);
-
-      const center = { x: cd.cx, y: cd.cy };
-
-      const kOld = view.baseScale * pinchStart.zoom;
-      const kNew = view.baseScale * newZoom;
-
-      const wx = (center.x - view.baseCx - pinchStart.panX) / kOld;
-      const wy = (center.y - view.baseCy - pinchStart.panY) / kOld;
-
-      view.zoom = newZoom;
-      view.panX = center.x - view.baseCx - wx * kNew;
-      view.panY = center.y - view.baseCy - wy * kNew;
-
-      drawIso();
-    }
-  });
-
-  function endPointer(e){
-    if (!pointers.has(e.pointerId)) return;
-    pointers.delete(e.pointerId);
-    if (pointers.size === 0) {
-      dragStart = null;
-      pinchStart = null;
-    } else if (pointers.size === 1) {
-      const remaining = Array.from(pointers.values())[0];
-      dragStart = { x: remaining.x, y: remaining.y, panX: view.panX, panY: view.panY };
-      pinchStart = null;
-    }
-  }
-
-  isoCanvas.addEventListener("pointerup", endPointer);
-  isoCanvas.addEventListener("pointercancel", endPointer);
-  isoCanvas.addEventListener("pointerleave", endPointer);
-
-  // -------------------------
-  // Drawing helpers
-  // -------------------------
   function drawMiniAxes() {
     if (!ctxIso) return;
-    const w = isoCanvas.width, h = isoCanvas.height;
+    const { w, h } = ensureCanvasDpr();
 
     const cx = w * 0.16;
     const cy = h * 0.76;
@@ -1129,13 +1065,9 @@ UP 30</textarea>
     ctx.restore();
   }
 
-  // -------------------------
-  // NEW: Isometric grid on plane z=0 (x,y families + x+y family)
-  // -------------------------
-  function drawIsoGrid(ctx, pts3d, toCanvas) {
+  function drawIsoGrid(ctx, pts3d, toCanvas, w, h) {
     if (!ctx || !pts3d || pts3d.length < 1) return;
 
-    // Model bounds in WORLD (x,y) so grid covers what you drew.
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     for (const p of pts3d) {
       minX = Math.min(minX, p.x);
@@ -1144,34 +1076,30 @@ UP 30</textarea>
       maxY = Math.max(maxY, p.y);
     }
 
-    // Expand bounds based on viewport/zoom so grid still covers when you pan.
     const k = view.baseScale * view.zoom;
-    const spanProjX = isoCanvas.width / Math.max(k, 1e-6);
-    const spanProjY = isoCanvas.height / Math.max(k, 1e-6);
-    const extra = Math.max(spanProjX, spanProjY) * 1.4; // generous
+    const spanProjX = w / Math.max(k, 1e-6);
+    const spanProjY = h / Math.max(k, 1e-6);
+    const extra = Math.max(spanProjX, spanProjY) * 1.4;
 
     const x0 = minX - extra, x1 = maxX + extra;
     const y0 = minY - extra, y1 = maxY + extra;
 
-    // Grid spacing in mm (world). Tweak if you want.
     const minor = 50;
-    const majorEvery = 5; // 5 * 50 = 250
+    const majorEvery = 5;
 
     function drawFamily(drawLineFn, spacing, alphaMinor, alphaMajor){
-      // We'll draw minor, then major.
       for (let pass = 0; pass < 2; pass++) {
         const isMajor = (pass === 1);
         const alpha = isMajor ? alphaMajor : alphaMinor;
         const width = isMajor ? 1.4 : 1.0;
 
-        ctx.strokeStyle = `rgba(147,197,253,${alpha})`; // light blue
+        ctx.strokeStyle = `rgba(147,197,253,${alpha})`;
         ctx.lineWidth = width;
 
         drawLineFn(isMajor, spacing);
       }
     }
 
-    // 1) x = const (parallel to y-axis in world)
     drawFamily((isMajor, spacing) => {
       const step = spacing;
       const start = Math.floor(x0 / step);
@@ -1192,7 +1120,6 @@ UP 30</textarea>
       }
     }, minor, 0.08, 0.16);
 
-    // 2) y = const (parallel to x-axis in world)
     drawFamily((isMajor, spacing) => {
       const step = spacing;
       const start = Math.floor(y0 / step);
@@ -1213,7 +1140,6 @@ UP 30</textarea>
       }
     }, minor, 0.08, 0.16);
 
-    // 3) x + y = const (diagonal family)
     drawFamily((isMajor, spacing) => {
       const step = spacing;
       const cMin = (x0 + y0);
@@ -1228,18 +1154,14 @@ UP 30</textarea>
 
         const c = i * step;
 
-        // Intersect with rectangle [x0,x1]x[y0,y1]
-        // Using two points along x-range, clamp y.
         let xa = x0, ya = c - xa;
         let xb = x1, yb = c - xb;
 
-        // If endpoints are outside y-range, clamp by y-range and recompute x.
         if (ya < y0) { ya = y0; xa = c - ya; }
         if (ya > y1) { ya = y1; xa = c - ya; }
         if (yb < y0) { yb = y0; xb = c - yb; }
         if (yb > y1) { yb = y1; xb = c - yb; }
 
-        // If line doesn't hit rect, skip
         if (xa < x0-1e-6 || xa > x1+1e-6 || xb < x0-1e-6 || xb > x1+1e-6) continue;
 
         const a = toCanvas(projectIso({x:xa, y:ya, z:0}));
@@ -1253,9 +1175,6 @@ UP 30</textarea>
     }, minor, 0.06, 0.14);
   }
 
-  // -------------------------
-  // Main draw
-  // -------------------------
   function drawIso() {
     if (!ctxIso) return;
 
@@ -1264,7 +1183,8 @@ UP 30</textarea>
       errorIso.style.display = "block";
       isoCountOut.textContent = "–";
       isoLenOut.textContent = "–";
-      ctxIso.clearRect(0, 0, isoCanvas.width, isoCanvas.height);
+      const { w, h } = ensureCanvasDpr();
+      ctxIso.clearRect(0, 0, w, h);
       return;
     }
 
@@ -1278,9 +1198,8 @@ UP 30</textarea>
 
     const proj = pts3d.map(projectIso);
 
+    const { w, h } = ensureCanvasDpr();
     if (!isFinite(view.baseScale) || view.baseScale <= 0) fitView(false);
-
-    const w = isoCanvas.width, h = isoCanvas.height;
 
     function toCanvas(p) {
       const k = view.baseScale * view.zoom;
@@ -1292,13 +1211,9 @@ UP 30</textarea>
 
     ctxIso.clearRect(0, 0, w, h);
 
-    // NEW: grid behind everything
-    drawIsoGrid(ctxIso, pts3d, toCanvas);
-
-    // axes overlay (still useful)
+    drawIsoGrid(ctxIso, pts3d, toCanvas, w, h);
     drawMiniAxes();
 
-    // Pipe polyline
     ctxIso.strokeStyle = "#22c55e";
     ctxIso.lineWidth = 4;
     ctxIso.beginPath();
@@ -1310,7 +1225,6 @@ UP 30</textarea>
     }
     ctxIso.stroke();
 
-    // Points (start/end highlighted)
     for (let i = 0; i < proj.length; i++) {
       const c = toCanvas(proj[i]);
       ctxIso.beginPath();
@@ -1335,7 +1249,6 @@ UP 30</textarea>
       }
     }
 
-    // Segment labels
     for (let i = 0; i < proj.length - 1; i++) {
       const a = toCanvas(proj[i]);
       const b = toCanvas(proj[i+1]);
@@ -1356,13 +1269,14 @@ UP 30</textarea>
     ctxIso.fillText("Start = vit • Slut = orange", 12, 34);
   }
 
+  // --- Input helpers
+  function readNum(el){ return parseFloat(String(el.value).replace(",", ".")); }
+
   // Offset toggle
   offsetEnabled.addEventListener("change", () => {
     offsetPanel.style.display = offsetEnabled.checked ? "" : "none";
     errorOffset.style.display = "none";
   });
-
-  function readNum(el){ return parseFloat(String(el.value).replace(",", ".")); }
 
   function validateOffsetInputs(){
     const ang = readNum(offsetAngleInput);
@@ -1373,7 +1287,7 @@ UP 30</textarea>
     return { ang, off };
   }
 
-  // Buttons: normal or offset
+  // --- Buttons: normal or offset
   stepBtns.forEach(btn => {
     btn.addEventListener("click", () => {
       const dir = btn.dataset.dir;
@@ -1417,7 +1331,6 @@ UP 30</textarea>
     isoSteps = [];
     renderStepsList();
     syncTextareaFromSteps();
-    if (ctxIso) ctxIso.clearRect(0, 0, isoCanvas.width, isoCanvas.height);
     isoCountOut.textContent = "–";
     isoLenOut.textContent = "–";
     errorIso.style.display = "none";
@@ -1438,10 +1351,131 @@ UP 30</textarea>
 
   drawIsoBtn.addEventListener("click", e => { e.preventDefault(); fitView(true); drawIso(); });
 
+  // --- Pan/Zoom i CSS-pixlar
+  function getCanvasPointFromEvent(e){
+    const r = isoCanvas.getBoundingClientRect();
+    return { x: (e.clientX - r.left), y: (e.clientY - r.top) };
+  }
+
+  isoCanvas.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const { w, h } = ensureCanvasDpr();
+    const p = getCanvasPointFromEvent(e);
+
+    const oldZoom = view.zoom;
+    const zoomFactor = Math.exp((-e.deltaY) * 0.0015);
+    const newZoom = clamp(oldZoom * zoomFactor, 0.2, 8);
+
+    const kOld = view.baseScale * oldZoom;
+    const kNew = view.baseScale * newZoom;
+
+    const wx = (p.x - view.baseCx - view.panX) / kOld;
+    const wy = (p.y - view.baseCy - view.panY) / kOld;
+
+    view.zoom = newZoom;
+    view.panX = p.x - view.baseCx - wx * kNew;
+    view.panY = p.y - view.baseCy - wy * kNew;
+
+    drawIso();
+  }, { passive:false });
+
+  const pointers = new Map();
+  let dragStart = null;
+  let pinchStart = null;
+
+  function getCenterAndDist(){
+    const pts = Array.from(pointers.values());
+    if (pts.length < 2) return null;
+    const a = pts[0], b = pts[1];
+    const cx = (a.x + b.x) / 2;
+    const cy = (a.y + b.y) / 2;
+    const dist = Math.hypot(b.x - a.x, b.y - a.y);
+    return { cx, cy, dist };
+  }
+
+  isoCanvas.addEventListener("pointerdown", (e) => {
+    isoCanvas.setPointerCapture(e.pointerId);
+    const p = getCanvasPointFromEvent(e);
+    pointers.set(e.pointerId, p);
+
+    if (pointers.size === 1) {
+      dragStart = { x: p.x, y: p.y, panX: view.panX, panY: view.panY };
+      pinchStart = null;
+    } else if (pointers.size === 2) {
+      const cd = getCenterAndDist();
+      if (!cd) return;
+      pinchStart = {
+        dist: cd.dist,
+        zoom: view.zoom,
+        panX: view.panX,
+        panY: view.panY
+      };
+      dragStart = null;
+    }
+  });
+
+  isoCanvas.addEventListener("pointermove", (e) => {
+    if (!pointers.has(e.pointerId)) return;
+    const p = getCanvasPointFromEvent(e);
+    pointers.set(e.pointerId, p);
+
+    if (pointers.size === 1 && dragStart) {
+      view.panX = dragStart.panX + (p.x - dragStart.x);
+      view.panY = dragStart.panY + (p.y - dragStart.y);
+      drawIso();
+    } else if (pointers.size === 2 && pinchStart) {
+      const cd = getCenterAndDist();
+      if (!cd) return;
+
+      const zoomFactor = cd.dist / Math.max(pinchStart.dist, 1e-6);
+      const newZoom = clamp(pinchStart.zoom * zoomFactor, 0.2, 8);
+
+      const center = { x: cd.cx, y: cd.cy };
+
+      const kOld = view.baseScale * pinchStart.zoom;
+      const kNew = view.baseScale * newZoom;
+
+      const wx = (center.x - view.baseCx - pinchStart.panX) / kOld;
+      const wy = (center.y - view.baseCy - pinchStart.panY) / kOld;
+
+      view.zoom = newZoom;
+      view.panX = center.x - view.baseCx - wx * kNew;
+      view.panY = center.y - view.baseCy - wy * kNew;
+
+      drawIso();
+    }
+  });
+
+  function endPointer(e){
+    if (!pointers.has(e.pointerId)) return;
+    pointers.delete(e.pointerId);
+    if (pointers.size === 0) {
+      dragStart = null;
+      pinchStart = null;
+    } else if (pointers.size === 1) {
+      const remaining = Array.from(pointers.values())[0];
+      dragStart = { x: remaining.x, y: remaining.y, panX: view.panX, panY: view.panY };
+      pinchStart = null;
+    }
+  }
+
+  isoCanvas.addEventListener("pointerup", endPointer);
+  isoCanvas.addEventListener("pointercancel", endPointer);
+  isoCanvas.addEventListener("pointerleave", endPointer);
+
+  // --- Redraw på resize (för DPR + ny höjd på mobil)
+  window.addEventListener("resize", () => {
+    if (modeIso3dEl.style.display !== "none") {
+      fitView(true);
+      drawIso();
+    }
+  });
+
   // Init
   calculateHeightAngle();
   isoSteps = parseSteps(points3dInput.value) || [];
   renderStepsList();
+  ensureCanvasDpr();
   fitView(false);
   drawIso();
 </script>
