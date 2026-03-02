@@ -35,10 +35,7 @@
     backdrop-filter: blur(16px);
   }
 
-  h1 {
-    font-size: 1.3rem;
-    margin: 0 0 4px;
-  }
+  h1 { font-size: 1.3rem; margin: 0 0 4px; }
 
   .subtitle {
     font-size: 0.85rem;
@@ -99,7 +96,7 @@
     margin-left: 2px;
   }
 
-  input[type="number"] {
+  input[type="number"], select {
     width: 100%;
     box-sizing: border-box;
     padding: 8px 9px;
@@ -112,7 +109,7 @@
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
 
-  input[type="number"]:focus {
+  input[type="number"]:focus, select:focus {
     border-color: #38bdf8;
     box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
   }
@@ -208,7 +205,6 @@
   }
 
   .leg { stroke-width: 3; fill: none; }
-
   .leg.horizontal { stroke: #22c55e; }
   .leg.vertical   { stroke: #38bdf8; }
   .hyp            { stroke: #f97316; stroke-width: 3; fill: none; }
@@ -243,7 +239,6 @@
   .howto ol { margin: 0; padding-left: 18px; }
   .howto li { margin-bottom: 4px; }
 
-  /* 3D ISO */
   textarea.iso-input {
     width: 100%;
     box-sizing: border-box;
@@ -366,17 +361,15 @@
   </div>
 
   <div class="layout">
-    <!-- VÄNSTER: FORM -->
+    <!-- VÄNSTER -->
     <section>
       <div class="mode-tabs">
-        <button class="tab-btn active" data-mode="heightAngle">
-          Höjd + vinkel (som ritningen)
-        </button>
+        <button class="tab-btn active" data-mode="heightAngle">Höjd + vinkel (som ritningen)</button>
         <button class="tab-btn" data-mode="howto">Hur du använder detta</button>
         <button class="tab-btn" data-mode="iso3d">3D ISO</button>
       </div>
 
-      <!-- Läge: Höjd + vinkel -->
+      <!-- Höjd + vinkel -->
       <div id="mode-heightAngle">
         <div class="field">
           <label for="height2">Höjd från referenslinje <span class="unit">(mm)</span></label>
@@ -386,22 +379,12 @@
           <label for="angle2">Vinkel på bock <span class="unit">(° från horisontal)</span></label>
           <input id="angle2" type="number" min="0" max="89.9" step="0.1" value="15" />
         </div>
-        <button class="calc" id="calcHeightAngle">
-          Beräkna <span aria-hidden="true">➜</span>
-        </button>
-        <div id="errorHeightAngle" class="error">
-          Ange positiv höjd och vinkel mellan 0–89.9°.
-        </div>
+        <button class="calc" id="calcHeightAngle">Beräkna <span aria-hidden="true">➜</span></button>
+        <div id="errorHeightAngle" class="error">Ange positiv höjd och vinkel mellan 0–89.9°.</div>
 
         <div class="results">
-          <div class="results-row">
-            <span class="label">Rörlängd (lutande segment L):</span>
-            <span class="value" id="lenOut2">–</span>
-          </div>
-          <div class="results-row">
-            <span class="label">Horisontell projektion (fx):</span>
-            <span class="value" id="fxOut2">–</span>
-          </div>
+          <div class="results-row"><span class="label">Rörlängd (lutande segment L):</span><span class="value" id="lenOut2">–</span></div>
+          <div class="results-row"><span class="label">Horisontell projektion (fx):</span><span class="value" id="fxOut2">–</span></div>
           <div class="note">
             Längd = höjd / sin(v)<br/>
             fx = längd · cos(v) = höjd / tan(v).
@@ -409,7 +392,7 @@
         </div>
       </div>
 
-      <!-- Läge: Hur du använder detta -->
+      <!-- Howto -->
       <div id="mode-howto" style="display:none;">
         <div class="howto">
           <h3>Hur du använder måtten ute på jobbet</h3>
@@ -421,7 +404,7 @@
         </div>
       </div>
 
-      <!-- Läge: 3D ISO -->
+      <!-- ISO 3D -->
       <div id="mode-iso3d" style="display:none;">
         <div class="iso-controls">
           <div class="iso-row">
@@ -443,11 +426,33 @@
             <button class="iso-btn" data-dir="DOWN">DOWN ⬇</button>
           </div>
 
-          <!-- NYTT: Diagonal steg -->
+          <!-- Diagonal -->
           <div class="diagram-card" style="padding:12px;">
             <div class="diagram-header" style="margin-bottom:8px;">
               <span>Diagonal steg (valfri vinkel)</span>
               <span class="badge">D az el mm</span>
+            </div>
+
+            <div class="field" style="margin-bottom:10px;">
+              <label for="diagPreset">Snabbval</label>
+              <select id="diagPreset">
+                <option value="">— Välj snabbval —</option>
+
+                <option value="45,0">45° i plan (NE)</option>
+                <option value="315,0">45° i plan (SE)</option>
+                <option value="135,0">45° i plan (NW)</option>
+                <option value="225,0">45° i plan (SW)</option>
+
+                <option value="0,45">45° upp i E</option>
+                <option value="0,-45">45° ner i E</option>
+
+                <option value="90,45">45° upp i N</option>
+                <option value="90,-45">45° ner i N</option>
+
+                <option value="30,0">30° i plan</option>
+                <option value="60,0">60° i plan</option>
+              </select>
+              <div class="note" style="margin-top:6px;">Azimut: 0=E, 90=N. Elevation: +upp / -ner.</div>
             </div>
 
             <div class="diag-grid">
@@ -463,7 +468,7 @@
                 <label for="diagLen">Längd <span class="unit">(mm)</span></label>
                 <input id="diagLen" type="number" step="0.1" value="126" />
               </div>
-              <button class="diag-btn diag-btn" id="addDiagBtn">Lägg diagonal</button>
+              <button class="diag-btn" id="addDiagBtn">Lägg diagonal</button>
             </div>
 
             <div class="note" style="margin-top:8px;">
@@ -491,22 +496,12 @@ UP 30</textarea>
             <ol class="iso-list" id="stepsList"></ol>
           </div>
 
-          <button class="calc" id="drawIsoBtn">
-            Rita ISO <span aria-hidden="true">➜</span>
-          </button>
-          <div id="errorIso" class="error">
-            Kunde inte läsa stegen. Ex: <strong>E 120</strong> eller <strong>D 45 0 126</strong>.
-          </div>
+          <button class="calc" id="drawIsoBtn">Rita ISO <span aria-hidden="true">➜</span></button>
+          <div id="errorIso" class="error">Kunde inte läsa stegen. Ex: <strong>E 120</strong> eller <strong>D 45 0 126</strong>.</div>
 
           <div class="results">
-            <div class="results-row">
-              <span class="label">Antal punkter:</span>
-              <span class="value" id="isoCount">–</span>
-            </div>
-            <div class="results-row">
-              <span class="label">Total längd (3D):</span>
-              <span class="value" id="isoLen">–</span>
-            </div>
+            <div class="results-row"><span class="label">Antal punkter:</span><span class="value" id="isoCount">–</span></div>
+            <div class="results-row"><span class="label">Total längd (3D):</span><span class="value" id="isoLen">–</span></div>
           </div>
 
           <div class="diagram-card">
@@ -522,7 +517,7 @@ UP 30</textarea>
       </div>
     </section>
 
-    <!-- HÖGER: ILLUSTRATION -->
+    <!-- HÖGER: Illustration -->
     <section class="diagram-card">
       <div class="diagram-header">
         <span>Illustration</span>
@@ -574,7 +569,6 @@ UP 30</textarea>
   const projLine = document.getElementById("projLine");
   const zeroPoint = document.getElementById("zeroPoint");
   const labelZero = document.getElementById("labelZero");
-
   const labelFx     = document.getElementById("labelFx");
   const labelHeight = document.getElementById("labelHeight");
   const labelHyp    = document.getElementById("labelHyp");
@@ -597,6 +591,7 @@ UP 30</textarea>
   const ctxIso = isoCanvas ? isoCanvas.getContext("2d") : null;
 
   // Diagonal inputs
+  const diagPreset = document.getElementById("diagPreset");
   const diagAzInput = document.getElementById("diagAz");
   const diagElInput = document.getElementById("diagEl");
   const diagLenInput = document.getElementById("diagLen");
@@ -781,7 +776,6 @@ UP 30</textarea>
       const cleaned = line.replace(/\s+/g, " ").toUpperCase();
 
       // DIAGONAL: D az el mm
-      // ex: D 45 0 126
       let m = cleaned.match(/^D\s+([+-]?\d+(?:[.,]\d+)?)\s+([+-]?\d+(?:[.,]\d+)?)\s+([+-]?\d+(?:[.,]\d+)?)$/);
       if (m) {
         const az = parseFloat(m[1].replace(",", "."));
@@ -900,6 +894,7 @@ UP 30</textarea>
   // Fallback om roundRect saknas
   function roundRectPath(ctx, x, y, w, h, r) {
     if (ctx.roundRect) {
+      ctx.beginPath();
       ctx.roundRect(x, y, w, h, r);
       return;
     }
@@ -913,35 +908,30 @@ UP 30</textarea>
     ctx.closePath();
   }
 
-  // Rita måttlinje bredvid segment (som ritning)
+  // Måttlinje bredvid segment (som ritning)
   function drawDimForSegment(ctx, ax, ay, bx, by, text, sideSign) {
     const dx = bx - ax, dy = by - ay;
     const segLen = Math.hypot(dx, dy);
-    if (segLen < 24) return; // hoppa över superkorta
+    if (segLen < 24) return;
 
     const ux = dx / segLen, uy = dy / segLen;
-    // normal
     const nx = -uy, ny = ux;
 
     const offset = 14 * sideSign;
     const ox = nx * offset, oy = ny * offset;
 
-    // dimension line endpoints
     const dax = ax + ox, day = ay + oy;
     const dbx = bx + ox, dby = by + oy;
 
-    // draw extension "ticks" (som små streck)
     const tick = 7;
     ctx.strokeStyle = "rgba(148,163,184,0.55)";
     ctx.lineWidth = 1.5;
 
-    // dim line
     ctx.beginPath();
     ctx.moveTo(dax, day);
     ctx.lineTo(dbx, dby);
     ctx.stroke();
 
-    // end ticks (perp mot dim line)
     ctx.beginPath();
     ctx.moveTo(dax - nx * tick, day - ny * tick);
     ctx.lineTo(dax + nx * tick, day + ny * tick);
@@ -952,7 +942,6 @@ UP 30</textarea>
     ctx.lineTo(dbx + nx * tick, dby + ny * tick);
     ctx.stroke();
 
-    // text box at midpoint of dim line (roterad som linjen)
     const mx = (dax + dbx) / 2;
     const my = (day + dby) / 2;
     const ang = Math.atan2(dby - day, dbx - dax);
@@ -1056,7 +1045,7 @@ UP 30</textarea>
       ctxIso.fill();
     }
 
-    // Måttlinjer bredvid varje segment (alternera sida för läsbarhet)
+    // Måttlinjer bredvid segmenten (alternerar sida för läsbarhet)
     for (let i = 0; i < proj.length - 1; i++) {
       const a = toCanvas(proj[i]);
       const b = toCanvas(proj[i+1]);
@@ -1071,6 +1060,17 @@ UP 30</textarea>
     ctxIso.font = "12px system-ui";
     ctxIso.fillText("ISO (E,N,UP) + diagonal (D az el mm)", 12, 18);
   }
+
+  // --- Snabbval dropdown ---
+  diagPreset.addEventListener("change", () => {
+    if (!diagPreset.value) return;
+    const [az, el] = diagPreset.value.split(",").map(v => parseFloat(v));
+    if (!isFinite(az) || !isFinite(el)) return;
+    diagAzInput.value = az;
+    diagElInput.value = el;
+    diagLenInput.focus();
+    diagLenInput.select();
+  });
 
   // --- ISO UI: knappar ---
   stepBtns.forEach(btn => {
@@ -1116,7 +1116,6 @@ UP 30</textarea>
     errorIso.style.display = "none";
   });
 
-  // Manuell edit i textarea: synka listan live
   points3dInput.addEventListener("input", () => {
     const parsed = parseSteps(points3dInput.value);
     if (parsed) {
