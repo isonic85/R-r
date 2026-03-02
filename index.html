@@ -53,9 +53,7 @@
   }
 
   @media (max-width: 780px) {
-    .layout {
-      grid-template-columns: 1fr;
-    }
+    .layout { grid-template-columns: 1fr; }
   }
 
   .mode-tabs {
@@ -86,9 +84,7 @@
     color: white;
   }
 
-  .field {
-    margin-bottom: 9px;
-  }
+  .field { margin-bottom: 9px; }
 
   label {
     font-size: 0.8rem;
@@ -145,10 +141,7 @@
     transform: translateY(-1px);
   }
 
-  button.calc:active {
-    transform: translateY(0);
-    box-shadow: none;
-  }
+  button.calc:active { transform: translateY(0); box-shadow: none; }
 
   .results {
     margin-top: 10px;
@@ -165,9 +158,7 @@
     margin-bottom: 4px;
   }
 
-  .results-row span.label {
-    color: #9ca3af;
-  }
+  .results-row span.label { color: #9ca3af; }
 
   .results-row span.value {
     font-variant-numeric: tabular-nums;
@@ -216,10 +207,7 @@
     stroke-dasharray: 3 3;
   }
 
-  .leg {
-    stroke-width: 3;
-    fill: none;
-  }
+  .leg { stroke-width: 3; fill: none; }
 
   .leg.horizontal { stroke: #22c55e; }
   .leg.vertical   { stroke: #38bdf8; }
@@ -242,7 +230,6 @@
     stroke-width: 1px;
   }
 
-  /* Hur du använder detta */
   .howto {
     margin-top: 6px;
     padding: 10px 11px;
@@ -252,19 +239,9 @@
     font-size: 0.82rem;
   }
 
-  .howto h3 {
-    margin: 0 0 6px;
-    font-size: 0.9rem;
-  }
-
-  .howto ol {
-    margin: 0;
-    padding-left: 18px;
-  }
-
-  .howto li {
-    margin-bottom: 4px;
-  }
+  .howto h3 { margin: 0 0 6px; font-size: 0.9rem; }
+  .howto ol { margin: 0; padding-left: 18px; }
+  .howto li { margin-bottom: 4px; }
 
   /* 3D ISO */
   textarea.iso-input {
@@ -284,11 +261,7 @@
     box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
   }
 
-  .iso-controls {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
+  .iso-controls { display: grid; grid-template-columns: 1fr; gap: 10px; }
 
   .iso-row {
     display: grid;
@@ -349,11 +322,30 @@
     color: #9ca3af;
   }
 
-  .iso-list {
-    margin: 0;
-    padding-left: 18px;
-  }
+  .iso-list { margin: 0; padding-left: 18px; }
   .iso-list li { margin: 3px 0; color: #cbd5f5; }
+
+  /* Ny diagonal-panel */
+  .diag-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 8px;
+    align-items:end;
+  }
+  @media (max-width: 520px){
+    .diag-grid{ grid-template-columns: 1fr 1fr; }
+    .diag-grid .diag-btn{ grid-column: 1 / -1; }
+  }
+  .diag-btn{
+    padding: 9px 10px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+    color:#001018;
+    font-weight:800;
+    cursor:pointer;
+  }
+  .diag-btn:hover{ filter: brightness(1.03); }
 
   @media (max-width: 480px) {
     h1 { font-size: 1.1rem; }
@@ -395,8 +387,7 @@
           <input id="angle2" type="number" min="0" max="89.9" step="0.1" value="15" />
         </div>
         <button class="calc" id="calcHeightAngle">
-          Beräkna
-          <span aria-hidden="true">➜</span>
+          Beräkna <span aria-hidden="true">➜</span>
         </button>
         <div id="errorHeightAngle" class="error">
           Ange positiv höjd och vinkel mellan 0–89.9°.
@@ -452,12 +443,44 @@
             <button class="iso-btn" data-dir="DOWN">DOWN ⬇</button>
           </div>
 
+          <!-- NYTT: Diagonal steg -->
+          <div class="diagram-card" style="padding:12px;">
+            <div class="diagram-header" style="margin-bottom:8px;">
+              <span>Diagonal steg (valfri vinkel)</span>
+              <span class="badge">D az el mm</span>
+            </div>
+
+            <div class="diag-grid">
+              <div>
+                <label for="diagAz">Azimut <span class="unit">(°: 0=E, 90=N)</span></label>
+                <input id="diagAz" type="number" step="0.1" value="45" />
+              </div>
+              <div>
+                <label for="diagEl">Elevation <span class="unit">(°: +upp / -ner)</span></label>
+                <input id="diagEl" type="number" step="0.1" value="0" />
+              </div>
+              <div>
+                <label for="diagLen">Längd <span class="unit">(mm)</span></label>
+                <input id="diagLen" type="number" step="0.1" value="126" />
+              </div>
+              <button class="diag-btn diag-btn" id="addDiagBtn">Lägg diagonal</button>
+            </div>
+
+            <div class="note" style="margin-top:8px;">
+              Ex: 45° i plan → <code>D 45 0 126</code> • 45° upp i E → <code>D 0 45 126</code>
+            </div>
+          </div>
+
           <div class="field">
             <label for="points3d">Steg-lista (du kan även skriva här manuellt)</label>
-            <textarea id="points3d" class="iso-input" rows="7">E 120
-N 40
+            <textarea id="points3d" class="iso-input" rows="8">E 120
+D 45 0 126
 UP 30</textarea>
-            <div class="note">Format per rad: <strong>E/W/N/S/UP/DOWN</strong> + mm. Ex: <code>E 120</code></div>
+            <div class="note">
+              Format per rad:<br>
+              • <strong>E/W/N/S/UP/DOWN</strong> + mm (ex <code>E 120</code>)<br>
+              • <strong>D az el mm</strong> (ex <code>D 45 0 126</code>)
+            </div>
           </div>
 
           <div class="iso-steps">
@@ -469,11 +492,10 @@ UP 30</textarea>
           </div>
 
           <button class="calc" id="drawIsoBtn">
-            Rita ISO
-            <span aria-hidden="true">➜</span>
+            Rita ISO <span aria-hidden="true">➜</span>
           </button>
           <div id="errorIso" class="error">
-            Kunde inte läsa stegen. Ex: <strong>E 120</strong> eller <strong>UP 30</strong>.
+            Kunde inte läsa stegen. Ex: <strong>E 120</strong> eller <strong>D 45 0 126</strong>.
           </div>
 
           <div class="results">
@@ -490,7 +512,7 @@ UP 30</textarea>
           <div class="diagram-card">
             <div class="diagram-header">
               <span>3D ISO-visning</span>
-              <span class="badge">E / N / UP</span>
+              <span class="badge">måttlinjer bredvid</span>
             </div>
             <canvas id="isoCanvas" width="600" height="360"
               style="width:100%; height:auto; border-radius:12px; display:block;
@@ -573,6 +595,12 @@ UP 30</textarea>
   const isoLenOut = document.getElementById("isoLen");
   const isoCanvas = document.getElementById("isoCanvas");
   const ctxIso = isoCanvas ? isoCanvas.getContext("2d") : null;
+
+  // Diagonal inputs
+  const diagAzInput = document.getElementById("diagAz");
+  const diagElInput = document.getElementById("diagEl");
+  const diagLenInput = document.getElementById("diagLen");
+  const addDiagBtn = document.getElementById("addDiagBtn");
 
   // --- Lägesbyte ---
   modeButtons.forEach(btn => {
@@ -713,7 +741,8 @@ UP 30</textarea>
   const COS30 = Math.cos(Math.PI / 6);
   const SIN30 = Math.sin(Math.PI / 6);
 
-  let isoSteps = []; // {dir:"E", mm:120}
+  // steg: { type:"CARD", dir:"E", mm:120 } eller { type:"DIAG", az:45, el:0, mm:126 }
+  let isoSteps = [];
 
   const dirMap = {
     E:  { dx: 1, dy: 0, dz: 0 },
@@ -741,29 +770,67 @@ UP 30</textarea>
     return sum;
   }
 
+  function degToRad(d){ return d * Math.PI / 180; }
+
+  // Parse textarea till steps
   function parseSteps(text) {
     const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
     const out = [];
+
     for (const line of lines) {
       const cleaned = line.replace(/\s+/g, " ").toUpperCase();
-      const m = cleaned.match(/^([A-Z]+)\s*([+-]?\d+(?:[.,]\d+)?)$/);
+
+      // DIAGONAL: D az el mm
+      // ex: D 45 0 126
+      let m = cleaned.match(/^D\s+([+-]?\d+(?:[.,]\d+)?)\s+([+-]?\d+(?:[.,]\d+)?)\s+([+-]?\d+(?:[.,]\d+)?)$/);
+      if (m) {
+        const az = parseFloat(m[1].replace(",", "."));
+        const el = parseFloat(m[2].replace(",", "."));
+        const mm = parseFloat(m[3].replace(",", "."));
+        if (![az, el, mm].every(isFinite) || mm <= 0) return null;
+        out.push({ type:"DIAG", az, el, mm });
+        continue;
+      }
+
+      // CARDINAL: DIR mm
+      m = cleaned.match(/^([A-Z]+)\s*([+-]?\d+(?:[.,]\d+)?)$/);
       if (!m) return null;
+
       const dir = m[1];
       const mm = parseFloat(m[2].replace(",", "."));
-      if (!dirMap[dir] || !isFinite(mm)) return null;
-      out.push({ dir, mm });
+      if (!dirMap[dir] || !isFinite(mm) || mm <= 0) return null;
+
+      out.push({ type:"CARD", dir, mm });
     }
     return out;
   }
 
+  // Bygg punkter från steps
   function stepsToPoints(steps) {
     let x = 0, y = 0, z = 0;
     const pts = [{ x, y, z }];
+
     for (const s of steps) {
-      const v = dirMap[s.dir];
-      x += v.dx * s.mm;
-      y += v.dy * s.mm;
-      z += v.dz * s.mm;
+      if (s.type === "CARD") {
+        const v = dirMap[s.dir];
+        x += v.dx * s.mm;
+        y += v.dy * s.mm;
+        z += v.dz * s.mm;
+      } else {
+        // DIAG
+        const az = degToRad(s.az);
+        const el = degToRad(s.el);
+        const cosEl = Math.cos(el);
+
+        // az: 0=E, 90=N
+        const dx = cosEl * Math.cos(az);
+        const dy = cosEl * Math.sin(az);
+        const dz = Math.sin(el);
+
+        x += dx * s.mm;
+        y += dy * s.mm;
+        z += dz * s.mm;
+      }
       pts.push({ x, y, z });
     }
     return pts;
@@ -772,15 +839,23 @@ UP 30</textarea>
   function renderStepsList() {
     stepsListEl.innerHTML = "";
     stepCountChip.textContent = `${isoSteps.length} steg`;
+
     isoSteps.forEach((s, i) => {
       const li = document.createElement("li");
-      li.textContent = `${i+1}. ${s.dir} ${s.mm} mm`;
+      if (s.type === "CARD") {
+        li.textContent = `${i+1}. ${s.dir} ${s.mm} mm`;
+      } else {
+        li.textContent = `${i+1}. D az:${s.az}° el:${s.el}°  ${s.mm} mm`;
+      }
       stepsListEl.appendChild(li);
     });
   }
 
   function syncTextareaFromSteps() {
-    points3dInput.value = isoSteps.map(s => `${s.dir} ${s.mm}`).join("\n");
+    points3dInput.value = isoSteps.map(s => {
+      if (s.type === "CARD") return `${s.dir} ${s.mm}`;
+      return `D ${s.az} ${s.el} ${s.mm}`;
+    }).join("\n");
   }
 
   function syncStepsFromTextarea() {
@@ -822,120 +897,92 @@ UP 30</textarea>
     ctxIso.fillText("UP", cU.x + 6, cU.y + 4);
   }
 
-  // ====== NYTT: Måttsättning som på tubing-ritning ======
-  function drawArrowHead(ctx, x, y, dx, dy, size) {
-    // dx,dy ska vara enhetsvektor i pilens riktning (mot linjen)
-    const px = -dy; // vinkelrät
-    const py = dx;
-
+  // Fallback om roundRect saknas
+  function roundRectPath(ctx, x, y, w, h, r) {
+    if (ctx.roundRect) {
+      ctx.roundRect(x, y, w, h, r);
+      return;
+    }
+    const rr = Math.min(r, w/2, h/2);
     ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x - dx * size + px * (size * 0.55), y - dy * size + py * (size * 0.55));
-    ctx.lineTo(x - dx * size - px * (size * 0.55), y - dy * size - py * (size * 0.55));
+    ctx.moveTo(x+rr, y);
+    ctx.arcTo(x+w, y,   x+w, y+h, rr);
+    ctx.arcTo(x+w, y+h, x,   y+h, rr);
+    ctx.arcTo(x,   y+h, x,   y,   rr);
+    ctx.arcTo(x,   y,   x+w, y,   rr);
     ctx.closePath();
-    ctx.fill();
   }
 
-  function drawDimText(ctx, x, y, angle, text) {
-    ctx.save();
-    ctx.translate(x, y);
+  // Rita måttlinje bredvid segment (som ritning)
+  function drawDimForSegment(ctx, ax, ay, bx, by, text, sideSign) {
+    const dx = bx - ax, dy = by - ay;
+    const segLen = Math.hypot(dx, dy);
+    if (segLen < 24) return; // hoppa över superkorta
 
-    // om text blir upp-och-ner, vänd 180
-    let rot = angle;
+    const ux = dx / segLen, uy = dy / segLen;
+    // normal
+    const nx = -uy, ny = ux;
+
+    const offset = 14 * sideSign;
+    const ox = nx * offset, oy = ny * offset;
+
+    // dimension line endpoints
+    const dax = ax + ox, day = ay + oy;
+    const dbx = bx + ox, dby = by + oy;
+
+    // draw extension "ticks" (som små streck)
+    const tick = 7;
+    ctx.strokeStyle = "rgba(148,163,184,0.55)";
+    ctx.lineWidth = 1.5;
+
+    // dim line
+    ctx.beginPath();
+    ctx.moveTo(dax, day);
+    ctx.lineTo(dbx, dby);
+    ctx.stroke();
+
+    // end ticks (perp mot dim line)
+    ctx.beginPath();
+    ctx.moveTo(dax - nx * tick, day - ny * tick);
+    ctx.lineTo(dax + nx * tick, day + ny * tick);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(dbx - nx * tick, dby - ny * tick);
+    ctx.lineTo(dbx + nx * tick, dby + ny * tick);
+    ctx.stroke();
+
+    // text box at midpoint of dim line (roterad som linjen)
+    const mx = (dax + dbx) / 2;
+    const my = (day + dby) / 2;
+    const ang = Math.atan2(dby - day, dbx - dax);
+    let rot = ang;
     if (rot > Math.PI/2 || rot < -Math.PI/2) rot += Math.PI;
-    ctx.rotate(rot);
 
+    ctx.save();
+    ctx.translate(mx, my);
+    ctx.rotate(rot);
     ctx.font = "12px system-ui";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    // liten bakgrundsplatta (som ritningens “läsbarhet”)
-    const padX = 6, padY = 3;
-    const w = ctx.measureText(text).width;
-    const boxW = w + padX * 2;
-    const boxH = 16 + padY * 2;
+    const padX = 7, padY = 4;
+    const tw = ctx.measureText(text).width;
+    const boxW = tw + padX * 2;
+    const boxH = 18 + padY * 2;
 
     ctx.fillStyle = "rgba(2, 6, 23, 0.88)";
     ctx.strokeStyle = "rgba(148, 163, 184, 0.35)";
     ctx.lineWidth = 1;
 
-    ctx.beginPath();
-    ctx.roundRect(-boxW/2, -boxH/2, boxW, boxH, 6);
+    roundRectPath(ctx, -boxW/2, -boxH/2, boxW, boxH, 6);
     ctx.fill();
     ctx.stroke();
 
     ctx.fillStyle = "#e5e7eb";
     ctx.fillText(text, 0, 0);
-
     ctx.restore();
   }
-
-  function drawDimension(ctx, x1, y1, x2, y2, text, offsetPx) {
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    const L = Math.hypot(dx, dy);
-    if (L < 1e-6) return;
-
-    const ux = dx / L;
-    const uy = dy / L;
-
-    // normal (vinkelrät) – flyttar ut måttlinjen från röret
-    const nx = -uy;
-    const ny = ux;
-
-    // förlängningslinjer: lite “gap” från röret
-    const gapFromPipe = 6;
-    const extLen = offsetPx - gapFromPipe;
-
-    // punkter på dimensionline (parallell med segmentet)
-    const ax = x1 + nx * offsetPx;
-    const ay = y1 + ny * offsetPx;
-    const bx = x2 + nx * offsetPx;
-    const by = y2 + ny * offsetPx;
-
-    ctx.save();
-
-    // extension lines + dimension lines färg
-    ctx.strokeStyle = "rgba(148, 163, 184, 0.65)";
-    ctx.lineWidth = 1;
-
-    // extension line vid start
-    ctx.beginPath();
-    ctx.moveTo(x1 + nx * gapFromPipe, y1 + ny * gapFromPipe);
-    ctx.lineTo(x1 + nx * (gapFromPipe + extLen), y1 + ny * (gapFromPipe + extLen));
-    ctx.stroke();
-
-    // extension line vid slut
-    ctx.beginPath();
-    ctx.moveTo(x2 + nx * gapFromPipe, y2 + ny * gapFromPipe);
-    ctx.lineTo(x2 + nx * (gapFromPipe + extLen), y2 + ny * (gapFromPipe + extLen));
-    ctx.stroke();
-
-    // dimension line
-    ctx.beginPath();
-    ctx.moveTo(ax, ay);
-    ctx.lineTo(bx, by);
-    ctx.stroke();
-
-    // arrows
-    ctx.fillStyle = "rgba(148, 163, 184, 0.9)";
-    const arrowSize = 8;
-
-    // pil in mot mitten från start
-    drawArrowHead(ctx, ax, ay, ux, uy, arrowSize);
-    // pil in mot mitten från slut (motsatt riktning)
-    drawArrowHead(ctx, bx, by, -ux, -uy, arrowSize);
-
-    // text i mitten, roterad parallellt med segmentet
-    const mx = (ax + bx) / 2;
-    const my = (ay + by) / 2;
-    const ang = Math.atan2(by - ay, bx - ax);
-
-    drawDimText(ctx, mx, my, ang, text);
-
-    ctx.restore();
-  }
-  // ====== SLUT NYTT ======
 
   function drawIso() {
     if (!ctxIso) return;
@@ -950,7 +997,6 @@ UP 30</textarea>
     }
 
     errorIso.style.display = "none";
-
     isoSteps = parsed;
     renderStepsList();
 
@@ -970,11 +1016,10 @@ UP 30</textarea>
 
     const w = isoCanvas.width;
     const h = isoCanvas.height;
-    const pad = 24;
+    const pad = 28;
 
     const spanX = Math.max(maxX - minX, 1e-6);
     const spanY = Math.max(maxY - minY, 1e-6);
-
     const scale = Math.min((w - 2*pad) / spanX, (h - 2*pad) / spanY);
 
     const midX = (minX + maxX) / 2;
@@ -1011,35 +1056,20 @@ UP 30</textarea>
       ctxIso.fill();
     }
 
-    // ====== NYTT: Måttsättning som på ritning (offset med pilar) ======
-    // Offset nivåer så de inte krockar lika lätt:
-    // varannan på andra sidan + “stegad” offset
-    const baseOffset = 22;
-    const stepOffset = 12;
-
+    // Måttlinjer bredvid varje segment (alternera sida för läsbarhet)
     for (let i = 0; i < proj.length - 1; i++) {
       const a = toCanvas(proj[i]);
       const b = toCanvas(proj[i+1]);
-
       const mm = isoSteps[i]?.mm;
       if (!isFinite(mm)) continue;
 
-      // om segmentet är extremt kort på canvas kan text/pilar bli stökigt
-      const segLenPx = Math.hypot(b.x - a.x, b.y - a.y);
-      if (segLenPx < 14) continue;
-
-      // sida + nivå
       const side = (i % 2 === 0) ? 1 : -1;
-      const level = Math.floor(i / 2) % 3; // 0,1,2,0,1,2...
-      const offset = (baseOffset + level * stepOffset) * side;
-
-      drawDimension(ctxIso, a.x, a.y, b.x, b.y, `${mm} mm`, offset);
+      drawDimForSegment(ctxIso, a.x, a.y, b.x, b.y, `${mm} mm`, side);
     }
-    // ====== SLUT NYTT ======
 
     ctxIso.fillStyle = "#e5e7eb";
     ctxIso.font = "12px system-ui";
-    ctxIso.fillText("ISO (måttsatt som ritning)", 12, 18);
+    ctxIso.fillText("ISO (E,N,UP) + diagonal (D az el mm)", 12, 18);
   }
 
   // --- ISO UI: knappar ---
@@ -1049,11 +1079,24 @@ UP 30</textarea>
       const mm = parseFloat(String(stepMmInput.value).replace(",", "."));
       if (!isFinite(mm) || mm <= 0) return;
 
-      isoSteps.push({ dir, mm });
+      isoSteps.push({ type:"CARD", dir, mm });
       renderStepsList();
       syncTextareaFromSteps();
       drawIso();
     });
+  });
+
+  addDiagBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    const az = parseFloat(String(diagAzInput.value).replace(",", "."));
+    const el = parseFloat(String(diagElInput.value).replace(",", "."));
+    const mm = parseFloat(String(diagLenInput.value).replace(",", "."));
+    if (![az, el, mm].every(isFinite) || mm <= 0) return;
+
+    isoSteps.push({ type:"DIAG", az, el, mm });
+    renderStepsList();
+    syncTextareaFromSteps();
+    drawIso();
   });
 
   undoStepBtn.addEventListener("click", () => {
@@ -1098,6 +1141,7 @@ UP 30</textarea>
   calculateHeightAngle();
   isoSteps = parseSteps(points3dInput.value) || [];
   renderStepsList();
+  drawIso();
 </script>
 </body>
 </html>
