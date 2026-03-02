@@ -778,6 +778,9 @@ UP 30</textarea>
   const COS30 = Math.cos(Math.PI / 6);
   const SIN30 = Math.sin(Math.PI / 6);
 
+  // NEW: Mini-HUD box (kompass) uppe till vänster
+  const MINI_HUD = { x: 10, y: 10, w: 88, h: 64 }; // CSS-pixlar
+
   const dirMap = {
     E:   { dx:  1, dy:  0, dz:  0 },
     W:   { dx: -1, dy:  0, dz:  0 },
@@ -1011,36 +1014,123 @@ UP 30</textarea>
   fitViewBtn.addEventListener("click", () => { fitView(true); drawIso(); });
   resetViewBtn.addEventListener("click", resetView);
 
-  function drawMiniAxes() {
-    if (!ctxIso) return;
-    const { w, h } = ensureCanvasDpr();
+function drawMiniAxes() {
+  if (!ctxIso) return;
 
-    const cx = w * 0.16;
-    const cy = h * 0.76;
-    const s = 1.25;
+  const { w, h } = ensureCanvasDpr();
 
-    const O = projectIso({x:0,y:0,z:0});
-    const E = projectIso({x:80,y:0,z:0});
-    const N = projectIso({x:0,y:80,z:0});
-    const U = projectIso({x:0,y:0,z:80});
+  // HUD-box (uppe vänster)
+  const s = Math.min(1, Math.max(0.72, Math.min(w / 420, h / 280)));
+  const x = 10;
+  const y = 10;
+  const boxW = 92 * s;
+  const boxH = 66 * s;
+  const pad = 10 * s;
 
-    function toC(p){ return { x: cx + p.x*s, y: cy + p.y*s }; }
+  // 3D axellängd i "mm-enheter" (bara för kompassen)
+  const axisLen = 80;
 
-    const cO = toC(O), cE = toC(E), cN = toC(N), cU = toC(U);
+  // Projektionspunkter (i "proj-koord")
+  const O = projectIso({ x: 0, y: 0, z: 0 });
+  const E = projectIso({ x: axisLen, y: 0, z: 0 });
+  const N = projectIso({ x: 0, y: axisLen, z: 0 });
+  const U = projectIso({ x: 0, y: 0, z: axisLen });
 
-    ctxIso.lineWidth = 2;
-    ctxIso.strokeStyle = "rgba(148,163,184,0.85)";
-    ctxIso.fillStyle = "#e5e7eb";
-
-    ctxIso.beginPath(); ctxIso.moveTo(cO.x,cO.y); ctxIso.lineTo(cE.x,cE.y); ctxIso.stroke();
-    ctxIso.beginPath(); ctxIso.moveTo(cO.x,cO.y); ctxIso.lineTo(cN.x,cN.y); ctxIso.stroke();
-    ctxIso.beginPath(); ctxIso.moveTo(cO.x,cO.y); ctxIso.lineTo(cU.x,cU.y); ctxIso.stroke();
-
-    ctxIso.font = "12px system-ui";
-    ctxIso.fillText("E", cE.x + 6, cE.y + 4);
-    ctxIso.fillText("N", cN.x + 6, cN.y + 4);
-    ctxIso.fillText("UP", cU.x + 6, cU.y + 4);
+  // Bounding box för att kunna skala/centrera
+  const pts = [O, E, N, U];
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (const p of pts) {
+    minX = Math.min(minX, p.x);
+    maxX = Math.max(maxX, p.x);
+    minY = Math.min(minY, p.y);
+    maxY = Math.max(maxY, p.y);
   }
+
+  const spanX = Math.max(maxX - minX, 1e-6);
+  const spanY = Math.max(maxY - minY, 1e-6);
+
+  // Skala så allt får plats i rutan med padding
+  const k = Math.min((boxW - 2 * pad) / spanX, (boxH - 2 * pad) / spanY);
+
+  // Centrera innehållet
+  const midX = (minX + maxX) / 2;
+  const midY = (minY + maxY) / 2;
+  const cx = x + boxW / 2;
+  const cy = y + boxH / 2;
+
+  function toHud(p) {
+    return {
+      x: cx + (p.x - midX) * k,
+      y: cy + (p.y - midY) * k
+    };
+  }
+
+  const cO = toHud(O), cE = toHud(E), cN = toHud(N), cU = toHud(U);
+
+  ctxIso.save();
+
+  // Bakgrund (så rutnätet inte stör)
+  ctxIso.fillStyle = "rgba(2,6,23,0.88)";
+  ctxIso.strokeStyle = "rgba(148,163,184,0.18)";
+  ctxIso.lineWidth = 1;
+  roundRectPath(ctxIso, x, y, boxW, boxH, 10 * s);
+  ctxIso.fill();
+  ctxIso.stroke();
+
+  // Axlar – renare
+  ctxIso.lineCap = "round";
+  ctxIso.lineJoin = "round";
+  ctxIso.lineWidth = 2.2 * s;
+
+  // E (cyan)
+  ctxIso.strokeStyle = "#38bdf8";
+  ctxIso.beginPath();
+  ctxIso.moveTo(cO.x, cO.y);
+  ctxIso.lineTo(cE.x, cE.y);
+  ctxIso.stroke();
+
+  // N (grön)
+  ctxIso.strokeStyle = "#22c55e";
+  ctxIso.beginPath();
+  ctxIso.moveTo(cO.x, cO.y);
+  ctxIso.lineTo(cN.x, cN.y);
+  ctxIso.stroke();
+
+  // UP (orange)
+  ctxIso.strokeStyle = "#f97316";
+  ctxIso.beginPath();
+  ctxIso.moveTo(cO.x, cO.y);
+  ctxIso.lineTo(cU.x, cU.y);
+  ctxIso.stroke();
+
+  // Labels med liten platta bakom
+  ctxIso.font = `${10 * s}px system-ui`;
+  ctxIso.textBaseline = "middle";
+  ctxIso.textAlign = "left";
+
+  function label(text, tx, ty) {
+    const padX = 4 * s, padY = 2 * s;
+    const tw = ctxIso.measureText(text).width;
+    const bw = tw + padX * 2;
+    const bh = 14 * s;
+
+    ctxIso.fillStyle = "rgba(2,6,23,0.90)";
+    ctxIso.strokeStyle = "rgba(148,163,184,0.16)";
+    ctxIso.lineWidth = 1;
+    roundRectPath(ctxIso, tx - padX, ty - bh / 2, bw, bh, 6 * s);
+    ctxIso.fill();
+    ctxIso.stroke();
+
+    ctxIso.fillStyle = "#e5e7eb";
+    ctxIso.fillText(text, tx, ty);
+  }
+
+  label("UP", cU.x + 6 * s, cU.y);
+  label("E",  cE.x + 6 * s, cE.y);
+  label("N",  cN.x - 16 * s, cN.y);
+
+  ctxIso.restore();
+}
 
   function drawSegmentLabel(ctx, x1, y1, x2, y2, text) {
     const mx = (x1 + x2) / 2;
@@ -1277,11 +1367,6 @@ UP 30</textarea>
       drawSegmentLabel(ctxIso, a.x, a.y, b.x, b.y, `${mm.toFixed(1)} mm`);
     }
 
-    ctxIso.fillStyle = "#e5e7eb";
-    ctxIso.font = "12px system-ui";
-    ctxIso.fillText(offsetEnabled.checked ? "ISO (Offset PÅ)" : "ISO", 12, 18);
-    ctxIso.fillStyle = "rgba(148,163,184,0.75)";
-    ctxIso.fillText("Start = vit • Slut = orange", 12, 34);
   }
 
   function readNum(el){ return parseFloat(String(el.value).replace(",", ".")); }
