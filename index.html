@@ -2,13 +2,19 @@
 <html lang="sv">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <!-- Uppdaterad viewport för iPhone -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>Rörbockning – Pythagoras & vinkel</title>
 <style>
   :root {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     line-height: 1.4;
     color-scheme: dark;
+  }
+
+  /* NEW: minska dubbeltrycks-zoom / sid-zoom-beteende på mobil */
+  html, body {
+    touch-action: manipulation;
   }
 
   body {
@@ -437,7 +443,6 @@
       </div>
 
       <div id="mode-iso3d" style="display:none;">
-        <!-- Modellen direkt under flikarna (som du ville) -->
         <div class="diagram-card iso-canvas-card">
           <div class="diagram-header">
             <span>3D ISO-visning</span>
@@ -530,7 +535,6 @@ UP 30</textarea>
       </div>
     </section>
 
-    <!-- Illustration-panelen (ska döljas i ISO-läget) -->
     <section class="diagram-card" id="illustrationPanel">
       <div class="diagram-header">
         <span>Illustration</span>
@@ -560,6 +564,21 @@ UP 30</textarea>
 </main>
 
 <script>
+  // =========================
+  // NEW: Stoppa pinch-zoom + dubbeltrycks-zoom (iOS Safari)
+  // =========================
+  document.addEventListener('gesturestart',  (e) => e.preventDefault(), { passive: false });
+  document.addEventListener('gesturechange', (e) => e.preventDefault(), { passive: false });
+  document.addEventListener('gestureend',    (e) => e.preventDefault(), { passive: false });
+
+  // Extra skydd mot dubbel-tap zoom på iOS
+  let __lastTouchEnd = 0;
+  document.addEventListener('touchend', (e) => {
+    const now = Date.now();
+    if (now - __lastTouchEnd <= 300) e.preventDefault();
+    __lastTouchEnd = now;
+  }, { passive: false });
+
   // -------------------------
   // Tabs + layout-hantering
   // -------------------------
@@ -575,7 +594,6 @@ UP 30</textarea>
     modeHowtoEl.style.display      = (mode === "howto") ? "" : "none";
     modeIso3dEl.style.display      = (mode === "iso3d") ? "" : "none";
 
-    // Dölj illustration när ISO är aktiv + ge full bredd
     const isoActive = (mode === "iso3d");
     illustrationPanel.style.display = isoActive ? "none" : "";
     layoutRoot.classList.toggle("iso-only", isoActive);
@@ -806,7 +824,6 @@ UP 30</textarea>
     ctx.closePath();
   }
 
-  // --- View state (i CSS-pixlar)
   const view = {
     baseScale: 1,
     baseCx: 0,
@@ -818,7 +835,6 @@ UP 30</textarea>
 
   function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
 
-  // Viktigt: vi ritar i CSS-pixlar men canvas är dpr-skalad
   function ensureCanvasDpr() {
     if (!isoCanvas || !ctxIso) return { w: 0, h: 0, dpr: 1 };
     const rect = isoCanvas.getBoundingClientRect();
@@ -834,7 +850,6 @@ UP 30</textarea>
       isoCanvas.height = targetH;
     }
 
-    // RITA I CSS-KOORDINATER
     ctxIso.setTransform(dpr, 0, 0, dpr, 0, 0);
     return { w: cssW, h: cssH, dpr };
   }
@@ -1269,10 +1284,8 @@ UP 30</textarea>
     ctxIso.fillText("Start = vit • Slut = orange", 12, 34);
   }
 
-  // --- Input helpers
   function readNum(el){ return parseFloat(String(el.value).replace(",", ".")); }
 
-  // Offset toggle
   offsetEnabled.addEventListener("change", () => {
     offsetPanel.style.display = offsetEnabled.checked ? "" : "none";
     errorOffset.style.display = "none";
@@ -1287,7 +1300,6 @@ UP 30</textarea>
     return { ang, off };
   }
 
-  // --- Buttons: normal or offset
   stepBtns.forEach(btn => {
     btn.addEventListener("click", () => {
       const dir = btn.dataset.dir;
@@ -1351,7 +1363,6 @@ UP 30</textarea>
 
   drawIsoBtn.addEventListener("click", e => { e.preventDefault(); fitView(true); drawIso(); });
 
-  // --- Pan/Zoom i CSS-pixlar
   function getCanvasPointFromEvent(e){
     const r = isoCanvas.getBoundingClientRect();
     return { x: (e.clientX - r.left), y: (e.clientY - r.top) };
@@ -1359,7 +1370,7 @@ UP 30</textarea>
 
   isoCanvas.addEventListener("wheel", (e) => {
     e.preventDefault();
-    const { w, h } = ensureCanvasDpr();
+    ensureCanvasDpr();
     const p = getCanvasPointFromEvent(e);
 
     const oldZoom = view.zoom;
@@ -1463,7 +1474,6 @@ UP 30</textarea>
   isoCanvas.addEventListener("pointercancel", endPointer);
   isoCanvas.addEventListener("pointerleave", endPointer);
 
-  // --- Redraw på resize (för DPR + ny höjd på mobil)
   window.addEventListener("resize", () => {
     if (modeIso3dEl.style.display !== "none") {
       fitView(true);
