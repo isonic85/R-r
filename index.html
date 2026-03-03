@@ -12,10 +12,7 @@
     color-scheme: dark;
   }
 
-  /* NEW: minska dubbeltrycks-zoom / sid-zoom-beteende på mobil */
-  html, body {
-    touch-action: manipulation;
-  }
+  html, body { touch-action: manipulation; }
 
   body {
     margin: 0;
@@ -59,7 +56,6 @@
     .layout { grid-template-columns: 1fr; }
   }
 
-  /* När ISO är aktiv vill vi att vänster tar hela bredden (illustration göms) */
   .layout.iso-only { grid-template-columns: 1fr; }
 
   .mode-tabs {
@@ -365,7 +361,6 @@
     .offset-grid{ grid-template-columns: 1fr; }
   }
 
-  /* Canvas: vi styr höjd via aspect-ratio (lite högre på mobil) */
   #isoCanvas {
     width: 100%;
     height: auto;
@@ -449,6 +444,7 @@
               <button class="mini-btn" id="fitViewBtn" title="Passa modellen i rutan">Passa</button>
               <button class="mini-btn" id="rotateViewBtn" title="Rotera vyn 90°">Rotera 90°</button>
               <button class="mini-btn" id="resetViewBtn" title="Återställ zoom/pan">Återställ</button>
+              <button class="mini-btn" id="exportPdfBtn" title="Exportera som PDF (A4 liggande)">Exportera PDF</button>
               <span class="badge">Zoom: scroll/pinch • Pan: dra</span>
             </div>
           </div>
@@ -563,10 +559,9 @@ UP 30</textarea>
   </div>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
 <script>
-  // =========================
-  // Stoppa pinch-zoom + dubbeltrycks-zoom (iOS Safari)
-  // =========================
   document.addEventListener('gesturestart',  (e) => e.preventDefault(), { passive: false });
   document.addEventListener('gesturechange', (e) => e.preventDefault(), { passive: false });
   document.addEventListener('gestureend',    (e) => e.preventDefault(), { passive: false });
@@ -578,9 +573,6 @@ UP 30</textarea>
     __lastTouchEnd = now;
   }, { passive: false });
 
-  // -------------------------
-  // Tabs + layout-hantering
-  // -------------------------
   const modeButtons = document.querySelectorAll(".tab-btn");
   const modeHeightAngleEl = document.getElementById("mode-heightAngle");
   const modeHowtoEl = document.getElementById("mode-howto");
@@ -613,9 +605,6 @@ UP 30</textarea>
     });
   });
 
-  // -------------------------
-  // Height + Angle (2D)
-  // -------------------------
   const height2Input = document.getElementById("height2");
   const angle2Input  = document.getElementById("angle2");
   const lenOut2      = document.getElementById("lenOut2");
@@ -747,9 +736,6 @@ UP 30</textarea>
   height2Input.addEventListener("input", calculateHeightAngle);
   angle2Input.addEventListener("input", calculateHeightAngle);
 
-  // -------------------------
-  // ISO + Offset + Grid + View + High-DPI canvas resize
-  // -------------------------
   const stepMmInput = document.getElementById("stepMm");
   const stepBtns = document.querySelectorAll(".iso-btn");
   const undoStepBtn = document.getElementById("undoStepBtn");
@@ -768,6 +754,8 @@ UP 30</textarea>
   const fitViewBtn = document.getElementById("fitViewBtn");
   const rotateViewBtn = document.getElementById("rotateViewBtn");
   const resetViewBtn = document.getElementById("resetViewBtn");
+
+  const exportPdfBtn = document.getElementById("exportPdfBtn");
 
   const offsetEnabled = document.getElementById("offsetEnabled");
   const offsetPanel = document.getElementById("offsetPanel");
@@ -791,7 +779,6 @@ UP 30</textarea>
 
   function degToRad(d){ return d * Math.PI / 180; }
 
-  // ---- VIEW STATE (inkl rotation) ----
   const view = {
     baseScale: 1,
     baseCx: 0,
@@ -799,7 +786,7 @@ UP 30</textarea>
     zoom: 1,
     panX: 0,
     panY: 0,
-    rot: 0, // 0..3 (90° steg runt Z)
+    rot: 0,
   };
 
   function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
@@ -823,23 +810,20 @@ UP 30</textarea>
     return { w: cssW, h: cssH, dpr };
   }
 
-  // ---- Rotation runt Z (vy-rotation) ----
   function rotateZ90(p, rotSteps){
     const r = ((rotSteps % 4) + 4) % 4;
     if (r === 0) return { x: p.x,  y: p.y,  z: p.z };
     if (r === 1) return { x: p.y,  y: -p.x, z: p.z };
     if (r === 2) return { x: -p.x, y: -p.y, z: p.z };
-    return           { x: -p.y, y: p.x,  z: p.z }; // r===3
+    return           { x: -p.y, y: p.x,  z: p.z };
   }
 
-  // ---- ISO-projektion (bas) ----
   function projectIsoRaw(p) {
     const sx = (p.x - p.y) * COS30;
     const sy = (p.x + p.y) * SIN30 - p.z;
     return { x: sx, y: sy };
   }
 
-  // ---- ISO-projektion med vy-rotation ----
   function projectIso(p3d) {
     const pr = rotateZ90(p3d, view.rot);
     return projectIsoRaw(pr);
@@ -1029,7 +1013,6 @@ UP 30</textarea>
   fitViewBtn.addEventListener("click", () => { fitView(true); drawIso(); });
   resetViewBtn.addEventListener("click", resetView);
 
-  // NEW: Rotera vyn 90° (påverkar även redan ritade steg)
   rotateViewBtn.addEventListener("click", () => {
     view.rot = (view.rot + 1) % 4;
     fitView(true);
@@ -1174,7 +1157,6 @@ UP 30</textarea>
   function drawIsoGrid(ctx, pts3d, toCanvas, w, h) {
     if (!ctx || !pts3d || pts3d.length < 1) return;
 
-    // Grid baseras på 3D-bounds, men ritas via projectIso() (som redan tar hänsyn till rotation)
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     for (const p of pts3d) {
       minX = Math.min(minX, p.x);
@@ -1566,6 +1548,330 @@ UP 30</textarea>
       drawIso();
     }
   });
+
+  function getJsPDFClass(){
+    if (window.jspdf && window.jspdf.jsPDF) return window.jspdf.jsPDF;
+    if (window.jsPDF) return window.jsPDF;
+    return null;
+  }
+
+  function fmtMm(v, d=1){ return isFinite(v) ? `${v.toFixed(d)} mm` : "–"; }
+  function fmtDeg(v, d=1){ return isFinite(v) ? `${v.toFixed(d)}°` : "–"; }
+
+  function vec3(a,b){ return { x:b.x-a.x, y:b.y-a.y, z:b.z-a.z }; }
+  function len3(v){ return Math.hypot(v.x, v.y, v.z); }
+  function dot3(a,b){ return a.x*b.x + a.y*b.y + a.z*b.z; }
+  function norm3(v){
+    const L = len3(v);
+    if (L < 1e-9) return {x:0,y:0,z:0,L:0};
+    return { x:v.x/L, y:v.y/L, z:v.z/L, L };
+  }
+
+  function bendAngle3D(prev, cur, next){
+    const u = norm3(vec3(prev, cur));
+    const v = norm3(vec3(cur, next));
+    if (u.L < 1e-9 || v.L < 1e-9) return NaN;
+    let c = dot3(u, v);
+    c = Math.max(-1, Math.min(1, c));
+    return Math.acos(c) * 180 / Math.PI;
+  }
+
+  function exportIsoPdf(){
+    try{
+      const parsed = parseSteps(points3dInput.value);
+      if (!parsed || parsed.length < 1) { alert("Inga steg att exportera."); return; }
+
+      const JsPDF = getJsPDFClass();
+      if (!JsPDF) { alert("jsPDF hittades inte. Kontrollera att CDN-scriptet laddas."); return; }
+
+      const steps = parsed;
+      const pts3d = stepsToPoints(steps);
+      const proj  = pts3d.map(projectIso);
+      const doc = new JsPDF({ unit:"mm", format:"a4", orientation:"landscape" });
+
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+      const margin = 10;
+      const tableW = 92;
+      const gap = 8;
+
+      const drawX0 = margin;
+      const drawY0 = margin;
+      const drawW  = pageW - margin*2 - tableW - gap;
+      const drawH  = pageH - margin*2;
+
+      const tableX0 = drawX0 + drawW + gap;
+      const tableY0 = margin;
+
+      let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+      for (const p of proj){
+        minX=Math.min(minX,p.x); maxX=Math.max(maxX,p.x);
+        minY=Math.min(minY,p.y); maxY=Math.max(maxY,p.y);
+      }
+      const spanX = Math.max(maxX-minX, 1e-9);
+      const spanY = Math.max(maxY-minY, 1e-9);
+
+      const pad = 10;
+      const scale = Math.min((drawW-2*pad)/spanX, (drawH-2*pad)/spanY);
+      const midX = (minX+maxX)/2;
+      const midY = (minY+maxY)/2;
+      const cx = drawX0 + drawW/2;
+      const cy = drawY0 + drawH/2;
+
+      function toPdf(p){
+        return { x: cx + (p.x-midX)*scale, y: cy + (p.y-midY)*scale };
+      }
+      const pts2 = proj.map(toPdf);
+
+      // ---------- PATCH: centroid + utsida ----------
+      const centroid = pts2.reduce((acc, p) => ({ x: acc.x + p.x, y: acc.y + p.y }), {x:0,y:0});
+      centroid.x /= pts2.length;
+      centroid.y /= pts2.length;
+
+      function outwardSignForSegment(a, b){
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const L = Math.hypot(dx, dy);
+        if (L < 1e-9) return 1;
+
+        const nx = -dy / L, ny = dx / L;
+        const mx = (a.x + b.x)/2, my = (a.y + b.y)/2;
+        const off = 9;
+
+        const pPlus  = { x: mx + nx*off, y: my + ny*off };
+        const pMinus = { x: mx - nx*off, y: my - ny*off };
+
+        const dPlus  = Math.hypot(pPlus.x - centroid.x,  pPlus.y - centroid.y);
+        const dMinus = Math.hypot(pMinus.x - centroid.x, pMinus.y - centroid.y);
+
+        return (dPlus >= dMinus) ? 1 : -1;
+      }
+
+      // ----------- Primitives -----------
+      function arcSafe(x, y, r, startDeg, endDeg){
+        if (typeof doc.arc === "function") { doc.arc(x,y,r,startDeg,endDeg); return; }
+        const s = startDeg * Math.PI/180;
+        const e = endDeg   * Math.PI/180;
+        let d = e - s;
+        while (d > Math.PI)  d -= Math.PI*2;
+        while (d < -Math.PI) d += Math.PI*2;
+        const n = Math.max(18, Math.round(36 * Math.abs(d) / (Math.PI/2)));
+        let px = x + Math.cos(s)*r, py = y + Math.sin(s)*r;
+        for (let i=1;i<=n;i++){
+          const t = s + d*(i/n);
+          const nx = x + Math.cos(t)*r, ny = y + Math.sin(t)*r;
+          doc.line(px,py,nx,ny);
+          px = nx; py = ny;
+        }
+      }
+
+      // ---------- PATCH: pilar ----------
+      function drawArrowHead(x, y, angRad, size){
+        const a1 = angRad + Math.PI*0.85;
+        const a2 = angRad - Math.PI*0.85;
+        doc.line(x, y, x + Math.cos(a1)*size, y + Math.sin(a1)*size);
+        doc.line(x, y, x + Math.cos(a2)*size, y + Math.sin(a2)*size);
+      }
+
+      // ---------- PATCH: CAD-mått (bryter linjen bakom text) ----------
+      function drawDimAlongSegment(a, b, valueText, outwardSign){
+        const dx = b.x-a.x, dy = b.y-a.y;
+        const L = Math.hypot(dx,dy);
+        if (L < 18) return;
+
+        const ux = dx/L, uy = dy/L;
+        const nx = -uy, ny = ux;
+
+        const off = 9;
+        const ex = nx*off*outwardSign;
+        const ey = ny*off*outwardSign;
+
+        const extOver = 2.0;
+        doc.setDrawColor(0);
+        doc.setLineWidth(0.20);
+        doc.line(a.x, a.y, a.x + ex + nx*extOver*outwardSign, a.y + ey + ny*extOver*outwardSign);
+        doc.line(b.x, b.y, b.x + ex + nx*extOver*outwardSign, b.y + ey + ny*extOver*outwardSign);
+
+        const a2 = { x:a.x+ex, y:a.y+ey };
+        const b2 = { x:b.x+ex, y:b.y+ey };
+
+        const ang = Math.atan2(b2.y-a2.y, b2.x-a2.x);
+
+        doc.setDrawColor(0);
+        doc.setLineWidth(0.30);
+        drawArrowHead(a2.x, a2.y, ang, 2.2);
+        drawArrowHead(b2.x, b2.y, ang + Math.PI, 2.2);
+
+        doc.setFont("helvetica","normal");
+        doc.setFontSize(9);
+        doc.setTextColor(0);
+
+        const mx = (a2.x+b2.x)/2;
+        const my = (a2.y+b2.y)/2;
+
+        let rot = ang * 180/Math.PI;
+        if (rot > 90 || rot < -90) rot += 180;
+
+        const tw = doc.getTextWidth(valueText);
+        const gap = tw/2 + 2.0;
+
+        const lx1 = mx - Math.cos(ang) * gap;
+        const ly1 = my - Math.sin(ang) * gap;
+        const lx2 = mx + Math.cos(ang) * gap;
+        const ly2 = my + Math.sin(ang) * gap;
+
+        doc.line(a2.x, a2.y, lx1, ly1);
+        doc.line(lx2, ly2, b2.x, b2.y);
+
+        doc.text(valueText, mx, my + 0.5, { angle: rot, align:"center" });
+      }
+
+      function normAngleRad(a){
+        while (a < 0) a += Math.PI*2;
+        while (a >= Math.PI*2) a -= Math.PI*2;
+        return a;
+      }
+
+      function drawAngleAtVertex(i){
+        if (i <= 0 || i >= pts2.length-1) return;
+
+        const p  = pts2[i];
+        const p0 = pts2[i-1];
+        const p1 = pts2[i+1];
+
+        const inDx = p.x - p0.x, inDy = p.y - p0.y;
+        const outDx = p1.x - p.x, outDy = p1.y - p.y;
+
+        const inL = Math.hypot(inDx,inDy);
+        const outL = Math.hypot(outDx,outDy);
+        if (inL < 20 || outL < 20) return;
+
+        const ang3d = bendAngle3D(pts3d[i-1], pts3d[i], pts3d[i+1]);
+        if (!isFinite(ang3d) || ang3d < 1 || ang3d > 179) return;
+
+        let aIn  = Math.atan2(-inDy, -inDx);
+        let aOut = Math.atan2(outDy, outDx);
+        aIn = normAngleRad(aIn);
+        aOut = normAngleRad(aOut);
+
+        let d = aOut - aIn;
+        while (d > Math.PI)  d -= Math.PI*2;
+        while (d < -Math.PI) d += Math.PI*2;
+
+        const start = aIn;
+        const end = aIn + d;
+
+        const r = 9;
+        doc.setDrawColor(0);
+        doc.setLineWidth(0.25);
+        arcSafe(p.x, p.y, r, start*180/Math.PI, end*180/Math.PI);
+
+        const mid = start + d/2;
+        const tx = p.x + Math.cos(mid) * (r + 4);
+        const ty = p.y + Math.sin(mid) * (r + 4);
+
+        doc.setFont("helvetica","normal");
+        doc.setFontSize(8);
+        doc.setTextColor(0);
+        doc.text(`${ang3d.toFixed(1)}°`, tx, ty, { align:"center" });
+      }
+
+      doc.setDrawColor(0);
+      doc.setLineWidth(0.35);
+      doc.rect(drawX0, drawY0, drawW, drawH);
+
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(12);
+      doc.setTextColor(0);
+      doc.text("ISO-ritning", drawX0+4, drawY0+6);
+
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(9);
+      doc.text(`Punkter: ${pts3d.length}`, drawX0+4, drawY0+11);
+      doc.text(`Total längd (3D): ${polylineLength3d(pts3d).toFixed(1)} mm`, drawX0+4, drawY0+15);
+      doc.text(`Vy-rotation: ${view.rot*90}°`, drawX0+4, drawY0+19);
+
+      doc.setDrawColor(16,120,60);
+      doc.setLineWidth(1.1);
+      for (let i=1;i<pts2.length;i++){
+        doc.line(pts2[i-1].x, pts2[i-1].y, pts2[i].x, pts2[i].y);
+      }
+
+      for (let i=0;i<pts2.length;i++){
+        const p = pts2[i];
+        if (i === 0) doc.setFillColor(0);
+        else if (i === pts2.length-1) doc.setFillColor(230,126,34);
+        else doc.setFillColor(60);
+        doc.circle(p.x, p.y, (i===0 || i===pts2.length-1) ? 2.0 : 1.4, "F");
+      }
+
+      // ---------- PATCH: mått per segment (2 decimaler, ingen "mm") ----------
+      for (let i=0;i<steps.length;i++){
+        const mm = steps[i]?.mm;
+        if (!isFinite(mm)) continue;
+
+        const a = pts2[i], b = pts2[i+1];
+        const sign = outwardSignForSegment(a, b);
+
+        drawDimAlongSegment(a, b, mm.toFixed(2), sign);
+      }
+
+      for (let i=1;i<pts2.length-1;i++){
+        drawAngleAtVertex(i);
+      }
+
+      doc.setDrawColor(0);
+      doc.setLineWidth(0.35);
+      doc.rect(tableX0, tableY0, tableW, drawH);
+
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(11);
+      doc.setTextColor(0);
+      doc.text("Mått & vinklar", tableX0+4, tableY0+7);
+
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(8);
+
+      let y = tableY0 + 13;
+      const lh = 4.2;
+      function row(txt){
+        if (y > tableY0 + drawH - 6) return false;
+        doc.text(txt, tableX0+4, y);
+        y += lh;
+        return true;
+      }
+
+      row("Steg:");
+      for (let i=0;i<steps.length;i++){
+        const s = steps[i];
+        const idx = String(i+1).padStart(2,"0");
+        if (s.type === "CARD") {
+          if (!row(`${idx}. ${s.dir}  ${fmtMm(s.mm,1)}`)) break;
+        } else {
+          if (!row(`${idx}. O ${s.dir}  v:${fmtDeg(s.ang,1)} off:${fmtMm(s.off,1)}`)) break;
+          if (!row(`    → L:${fmtMm(s.mm,1)}`)) break;
+        }
+      }
+
+      y += 2;
+      row("Bockvinklar:");
+      for (let i=1;i<pts3d.length-1;i++){
+        const a = bendAngle3D(pts3d[i-1], pts3d[i], pts3d[i+1]);
+        if (!row(`${String(i).padStart(2,"0")}: ${fmtDeg(a,1)}`)) break;
+      }
+
+      const now = new Date();
+      const name = `ISO-ritning_${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}.pdf`;
+      doc.save(name);
+
+    } catch (err){
+      console.error("PDF-export fel:", err);
+      alert("PDF-export kraschade: " + (err?.message || err));
+    }
+  }
+
+  if (exportPdfBtn){
+    exportPdfBtn.onclick = exportIsoPdf;
+  }
 
   // Init
   calculateHeightAngle();
