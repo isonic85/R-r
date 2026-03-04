@@ -826,37 +826,75 @@ UP 30</textarea>
         doc.line(x,y,x+Math.cos(a2)*size,y+Math.sin(a2)*size);
       };
 
-      function drawDimAlongSegment(a,b,valueText,outwardSign){
-        const dx=b.x-a.x, dy=b.y-a.y, L=Math.hypot(dx,dy);
-        if(L<18) return;
-        const ux=dx/L, uy=dy/L, nx=-uy, ny=ux;
-        const off=9, ex=nx*off*outwardSign, ey=ny*off*outwardSign;
-        const extOver=2.0;
+      function drawDimAlongSegment(a, b, valueText, outwardSign){
+  const dx=b.x-a.x, dy=b.y-a.y;
+  const segL=Math.hypot(dx,dy);
+  if(segL < 1e-6) return;
 
-        doc.setDrawColor(0); doc.setLineWidth(.20);
-        doc.line(a.x,a.y,a.x+ex+nx*extOver*outwardSign,a.y+ey+ny*extOver*outwardSign);
-        doc.line(b.x,b.y,b.x+ex+nx*extOver*outwardSign,b.y+ey+ny*extOver*outwardSign);
+  const ux=dx/segL, uy=dy/segL;
+  const nx=-uy, ny=ux;
 
-        const a2={x:a.x+ex,y:a.y+ey}, b2={x:b.x+ex,y:b.y+ey};
-        const ang=Math.atan2(b2.y-a2.y,b2.x-a2.x);
+  const off=9;
+  const ex=nx*off*outwardSign, ey=ny*off*outwardSign;
 
-        doc.setDrawColor(0); doc.setLineWidth(.30);
-        drawArrowHead(a2.x,a2.y,ang,2.2);
-        drawArrowHead(b2.x,b2.y,ang+Math.PI,2.2);
+  // Om segmentet är kort i PDF: rita en "minidimension" med fast längd
+  const minDimLen = 22; // mm på PDF:n
+  const useLen = Math.max(segL, minDimLen);
 
-        doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(0);
-        const mx=(a2.x+b2.x)/2, my=(a2.y+b2.y)/2;
-        let rot=ang*180/Math.PI; if(rot>90||rot<-90) rot+=180;
+  // Centerpunkt på segmentet (i PDF-koordinater)
+  const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
 
-        const tw=doc.getTextWidth(valueText), gap=tw/2+2.0;
-        const lx1=mx-Math.cos(ang)*gap, ly1=my-Math.sin(ang)*gap;
-        const lx2=mx+Math.cos(ang)*gap, ly2=my+Math.sin(ang)*gap;
+  // Skapa två dimension-endpoints längs segmentets riktning, centrerade kring mitten
+  const half = useLen/2;
+  const aDim = { x: mx - ux*half + ex, y: my - uy*half + ey };
+  const bDim = { x: mx + ux*half + ex, y: my + uy*half + ey };
 
-        doc.line(a2.x,a2.y,lx1,ly1);
-        doc.line(lx2,ly2,b2.x,b2.y);
+  // Extension lines från verkliga segmentets ändar till dimension-linjen
+  const extOver = 2.0;
+  doc.setDrawColor(0);
+  doc.setLineWidth(.20);
 
-        doc.text(valueText,mx,my+.5,{angle:rot,align:"center"});
-      }
+  // Projektera "verkliga" ändpunkter upp till dimensionlinjen (kortast)
+  const aExt = { x: a.x + ex, y: a.y + ey };
+  const bExt = { x: b.x + ex, y: b.y + ey };
+
+  doc.line(a.x, a.y, aExt.x + nx*extOver*outwardSign, aExt.y + ny*extOver*outwardSign);
+  doc.line(b.x, b.y, bExt.x + nx*extOver*outwardSign, bExt.y + ny*extOver*outwardSign);
+
+  // Dimension line
+  doc.setLineWidth(.30);
+  doc.line(aDim.x, aDim.y, bDim.x, bDim.y);
+
+  // Arrow heads
+  const drawArrowHead=(x,y,angRad,size)=>{
+    const a1=angRad+Math.PI*.85, a2=angRad-Math.PI*.85;
+    doc.line(x,y,x+Math.cos(a1)*size,y+Math.sin(a1)*size);
+    doc.line(x,y,x+Math.cos(a2)*size,y+Math.sin(a2)*size);
+  };
+  const ang=Math.atan2(bDim.y-aDim.y,bDim.x-aDim.x);
+  drawArrowHead(aDim.x,aDim.y,ang,2.2);
+  drawArrowHead(bDim.x,bDim.y,ang+Math.PI,2.2);
+
+  // Text med liten "lucka" så den inte krockar med linjen
+  doc.setFont("helvetica","normal");
+  doc.setFontSize(9);
+  doc.setTextColor(0);
+
+  let rot=ang*180/Math.PI;
+  if(rot>90||rot<-90) rot+=180;
+
+  const tw=doc.getTextWidth(valueText);
+  const gap=tw/2+2.0;
+
+  const lx1=mx+ex-Math.cos(ang)*gap, ly1=my+ey-Math.sin(ang)*gap;
+  const lx2=mx+ex+Math.cos(ang)*gap, ly2=my+ey+Math.sin(ang)*gap;
+
+  // Dela dimension line runt texten
+  doc.line(aDim.x,aDim.y,lx1,ly1);
+  doc.line(lx2,ly2,bDim.x,bDim.y);
+
+  doc.text(valueText, mx+ex, my+ey+.5, { angle: rot, align: "center" });
+}
 
       const normAngleRad=a=>{while(a<0)a+=Math.PI*2;while(a>=Math.PI*2)a-=Math.PI*2;return a;};
 
