@@ -1136,7 +1136,7 @@ function drawAngleLeaderAtVertex(i){
 
   doc.setFillColor(255,255,255);
   doc.setDrawColor(0); doc.setLineWidth(0.2);
-  doc.rect(rect.x, rect.y, rect.w, rect.h, "FD");
+
   doc.text(text, ax, ay + 1.1, { align:"center" });
   remember(rect);
 }
@@ -1212,16 +1212,46 @@ function drawAngleLeaderAtVertex(i){
         let rot=ang*180/Math.PI;
         if(rot>90||rot<-90) rot+=180;
 
-        const tw=doc.getTextWidth(valueText);
-        const gap=tw/2+2.0;
+        // Rita HEL dimensionlinje
+doc.setDrawColor(0);
+doc.setLineWidth(.30);
+doc.line(aDim.x, aDim.y, bDim.x, bDim.y);
 
-        const lx1=mx+ex-Math.cos(ang)*gap, ly1=my+ey-Math.sin(ang)*gap;
-        const lx2=mx+ex+Math.cos(ang)*gap, ly2=my+ey+Math.sin(ang)*gap;
+// --- text på linjen med vit mask bakom ---
+doc.setFont("helvetica","normal");
+doc.setFontSize(9);
+doc.setTextColor(0);
 
-        doc.line(aDim.x,aDim.y,lx1,ly1);
-        doc.line(lx2,ly2,bDim.x,bDim.y);
+const tx = mx + ex;
+const ty = my + ey + 0.5;
 
-        doc.text(valueText, mx+ex, my+ey+.5, { angle: rot, align: "center" });
+let rot = ang * 180 / Math.PI;
+if(rot > 90 || rot < -90) rot += 180;
+
+const tw = doc.getTextWidth(valueText);
+
+// vit mask bakom text
+const maskPad = 1.6;
+const maskW = tw + maskPad*2;
+const maskH = 5;
+
+const ux = Math.cos(ang);
+const uy = Math.sin(ang);
+
+doc.setDrawColor(255,255,255);
+doc.setLineWidth(maskH);
+
+doc.line(
+  tx - ux*(maskW/2),
+  ty - uy*(maskW/2),
+  tx + ux*(maskW/2),
+  ty + uy*(maskW/2)
+);
+
+// skriv text ovanpå
+doc.setDrawColor(0);
+doc.setLineWidth(.30);
+doc.text(valueText, tx, ty, { angle: rot, align: "center" });
       }
 
       const normAngleRad=a=>{while(a<0)a+=Math.PI*2;while(a>=Math.PI*2)a-=Math.PI*2;return a;};
