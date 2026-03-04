@@ -1038,6 +1038,109 @@ UP 30</textarea>
       const centroid=pts2.reduce((acc,p)=>({x:acc.x+p.x,y:acc.y+p.y}),{x:0,y:0});
       centroid.x/=pts2.length; centroid.y/=pts2.length;
 
+// --- Angle leaders (cleaner than arcs) ---
+const placedAngleRects = []; // {x,y,w,h}
+
+function rectsOverlap(a,b){
+  return !(a.x+a.w < b.x || b.x+b.w < a.x || a.y+a.h < b.y || b.y+b.h < a.y);
+}
+function collides(rect){
+  for(const r of placedAngleRects){
+    if(rectsOverlap(rect,r)) return true;
+  }
+  return false;
+}
+function remember(rect){ placedAngleRects.push(rect); }
+
+function drawArrowHeadPDF(doc, x, y, angRad, size){
+  const a1 = angRad + Math.PI*0.85;
+  const a2 = angRad - Math.PI*0.85;
+  doc.line(x,y, x+Math.cos(a1)*size, y+Math.sin(a1)*size);
+  doc.line(x,y, x+Math.cos(a2)*size, y+Math.sin(a2)*size);
+}
+
+// Draw a leader arrow that points at vertex i with text "xx.x°"
+function drawAngleLeaderAtVertex(i){
+  if(i<=0 || i>=pts2.length-1) return;
+
+  // Use 3D bend angle (correct for ISO view)
+  const ang3d = bendAngle3D(pts3d[i-1], pts3d[i], pts3d[i+1]);
+  if(!isFinite(ang3d) || ang3d < 1 || ang3d > 179) return;
+
+  const p = pts2[i];
+
+  // Place text outward from centroid (keeps labels outside geometry)
+  let vx = p.x - centroid.x;
+  let vy = p.y - centroid.y;
+  const vL = Math.hypot(vx,vy) || 1;
+  vx/=vL; vy/=vL;
+
+  const text = `${ang3d.toFixed(1)}°`;
+
+  doc.setFont("helvetica","normal");
+  doc.setFontSize(8);
+  doc.setTextColor(0);
+
+  // Text box sizing
+  const tw = doc.getTextWidth(text);
+  const padX = 2.2, padY = 1.6;
+  const bw = tw + padX*2;
+  const bh = 4.6 + padY*2;
+
+  // Try several radii until it doesn't collide with other angle labels
+  const radii = [12, 18, 24, 30, 36, 42];
+
+  for(const r of radii){
+    const ax = p.x + vx * r; // label center
+    const ay = p.y + vy * r;
+
+    const rect = { x: ax - bw/2, y: ay - bh/2, w: bw, h: bh };
+    if(collides(rect)) continue;
+
+    // Leader line from label to point (start outside box edge)
+    doc.setDrawColor(0);
+    doc.setLineWidth(0.25);
+
+    const lineStartX = ax - vx * (bw/2 + 1.2);
+    const lineStartY = ay - vy * (bh/2 + 1.2);
+
+    doc.line(lineStartX, lineStartY, p.x, p.y);
+
+    // Arrow at vertex
+    const angLine = Math.atan2(p.y - lineStartY, p.x - lineStartX);
+    drawArrowHeadPDF(doc, p.x, p.y, angLine, 2.0);
+
+    // Label box
+    doc.setFillColor(255,255,255);
+    doc.setDrawColor(0);
+    doc.setLineWidth(0.2);
+    doc.rect(rect.x, rect.y, rect.w, rect.h, "FD");
+    doc.text(text, ax, ay + 1.1, { align:"center" });
+
+    remember(rect);
+    return;
+  }
+
+  // Fallback: push far out
+  const r = 50;
+  const ax = p.x + vx*r, ay = p.y + vy*r;
+  const rect = { x: ax - bw/2, y: ay - bh/2, w: bw, h: bh };
+
+  doc.setDrawColor(0); doc.setLineWidth(0.25);
+  const lineStartX = ax - vx * (bw/2 + 1.2);
+  const lineStartY = ay - vy * (bh/2 + 1.2);
+  doc.line(lineStartX, lineStartY, p.x, p.y);
+
+  const angLine = Math.atan2(p.y - lineStartY, p.x - lineStartX);
+  drawArrowHeadPDF(doc, p.x, p.y, angLine, 2.0);
+
+  doc.setFillColor(255,255,255);
+  doc.setDrawColor(0); doc.setLineWidth(0.2);
+  doc.rect(rect.x, rect.y, rect.w, rect.h, "FD");
+  doc.text(text, ax, ay + 1.1, { align:"center" });
+  remember(rect);
+}
+
       function outwardSignForSegment(a,b){
         const dx=b.x-a.x, dy=b.y-a.y, L=Math.hypot(dx,dy);
         if(L<1e-9) return 1;
@@ -1212,7 +1315,7 @@ UP 30</textarea>
       }
 
       // Angles
-      for(let i=1;i<pts2.length-1;i++) drawAngleAtVertex(i);
+      for(let i=1;i<pts2.length-1;i++) drawAngleLeaderAtVertex(i);
 
       // Table frame
       doc.setDrawColor(0); doc.setLineWidth(.35);
