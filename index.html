@@ -102,77 +102,79 @@
     .hidden{display:none!important}
     .m0{margin:0!important}
     .mb0{margin-bottom:0!important}
+
     /* 1) Safe-area + stoppa horisontell “drift” */
-body{
-  overflow-x:hidden;
-  padding:
-    calc(8px + env(safe-area-inset-top))
-    calc(8px + env(safe-area-inset-right))
-    calc(8px + env(safe-area-inset-bottom))
-    calc(8px + env(safe-area-inset-left));
-}
+    body{
+      overflow-x:hidden;
+      padding:
+        calc(8px + env(safe-area-inset-top))
+        calc(8px + env(safe-area-inset-right))
+        calc(8px + env(safe-area-inset-bottom))
+        calc(8px + env(safe-area-inset-left));
+    }
 
-/* 2) Tabs: gör att knapparna hamnar centrerat på mobil */
-.mode-tabs{
-  display:flex;              /* istället för inline-flex-känsla */
-  width:100%;
-  justify-content:center;    /* centrerar knapparna */
-}
+    /* 2) Tabs: gör att knapparna hamnar centrerat på mobil */
+    .mode-tabs{
+      display:flex;
+      width:100%;
+      justify-content:center;
+    }
 
-/* om tabs blir för breda: behåll scroll men starta från vänster */
-@media (max-width:420px){
-  .mode-tabs{
-    justify-content:flex-start;
-    scroll-snap-type:x mandatory;
-  }
-  .tab-btn{ scroll-snap-align:center; }
-}
+    /* om tabs blir för breda: behåll scroll men starta från vänster */
+    @media (max-width:420px){
+      .mode-tabs{
+        justify-content:flex-start;
+        scroll-snap-type:x mandatory;
+      }
+      .tab-btn{ scroll-snap-align:center; }
+    }
 
-/* 3) ISO-header: gör att den ser centrerad ut på telefon */
-@media (max-width:780px){
-  .diagram-header{
-    flex-wrap:wrap;
-    justify-content:center;
-    text-align:center;
-    gap:10px;
-  }
-  .view-actions{
-    justify-content:center;
-    width:100%;
-  }
-  h1, .subtitle{ text-align:center; }
-}
-/* Tvinga riktig centrerad layout på iOS Safari */
-body{
-  display:block;            /* viktig: sluta med flex på body */
-}
+    /* 3) ISO-header: gör att den ser centrerad ut på telefon */
+    @media (max-width:780px){
+      .diagram-header{
+        flex-wrap:wrap;
+        justify-content:center;
+        text-align:center;
+        gap:10px;
+      }
+      .view-actions{
+        justify-content:center;
+        width:100%;
+      }
+      h1, .subtitle{ text-align:center; }
+    }
 
-/* centrerar hela appen robust */
-.app{
-  margin: 0 auto;
-  width: min(780px, 100%);
-}
+    /* Tvinga riktig centrerad layout på iOS Safari */
+    body{
+      display:block;
+    }
 
-/* se till att grid alltid stretchar barnen */
-.layout{
-  justify-items: stretch;
-  align-items: start;
-}
+    /* centrerar hela appen robust */
+    .app{
+      margin: 0 auto;
+      width: min(780px, 100%);
+    }
 
-/* tvinga att båda sektionerna fyller kolumnen */
-.layout > section{
-  width: 100%;
-  min-width: 0;
-}
+    /* se till att grid alltid stretchar barnen */
+    .layout{
+      justify-items: stretch;
+      align-items: start;
+    }
 
-/* alla cards ska fylla bredden och ligga centrerat */
-.diagram-card,
-.results,
-.howto,
-.iso-steps{
-  width: 100%;
-  margin-inline: auto;
-}
+    /* tvinga att båda sektionerna fyller kolumnen */
+    .layout > section{
+      width: 100%;
+      min-width: 0;
+    }
+
+    /* alla cards ska fylla bredden och ligga centrerat */
+    .diagram-card,
+    .results,
+    .howto,
+    .iso-steps{
+      width: 100%;
+      margin-inline: auto;
+    }
   </style>
 </head>
 <body>
@@ -242,11 +244,19 @@ body{
               <input id="stepMm" type="number" min="0" step="0.1" value="100" />
               <div class="note">Tryck en riktning för att lägga till ett rörsteg.</div>
 
+              <!-- ✅ Offset + Mått toggles -->
               <div class="offset-row">
-                <label class="offset-toggle m0" for="offsetEnabled">
-                  <input id="offsetEnabled" type="checkbox" />
-                  <span>Offset</span>
-                </label>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                  <label class="offset-toggle m0" for="offsetEnabled">
+                    <input id="offsetEnabled" type="checkbox" />
+                    <span>Offset</span>
+                  </label>
+
+                  <label class="offset-toggle m0" for="dimsEnabled" title="Visa/dölj mått på canvas">
+                    <input id="dimsEnabled" type="checkbox" checked />
+                    <span>Mått</span>
+                  </label>
+                </div>
                 <div class="note m0">Offset: vinkel + offset → hypotenusa.</div>
               </div>
             </div>
@@ -427,17 +437,32 @@ UP 30</textarea>
   // --- ISO 3D ---
   const stepMmInput=$("#stepMm"), stepBtns=$$(".iso-btn"), undoStepBtn=$("#undoStepBtn"), clearStepsBtn=$("#clearStepsBtn");
   const stepsListEl=$("#stepsList"), stepCountChip=$("#stepCountChip");
-  const points3dInput=$("#points3d"), drawIsoBtn=$("#drawIsoBtn"), errorIso=$("#errorIso"), isoCountOut=$("#isoCount"), isoLenOut=$("#isoLen");
+  const points3dInput=$("#points3d"), errorIso=$("#errorIso"), isoCountOut=$("#isoCount"), isoLenOut=$("#isoLen");
   const isoCanvas=$("#isoCanvas"), ctxIso=isoCanvas?isoCanvas.getContext("2d"):null;
-  const fitViewBtn=$("#fitViewBtn"), rotateViewBtn=$("#rotateViewBtn"), resetViewBtn=$("#resetViewBtn"), exportPdfBtn=$("#exportPdfBtn");
+  const rotateViewBtn=$("#rotateViewBtn"), resetViewBtn=$("#resetViewBtn"), exportPdfBtn=$("#exportPdfBtn");
   const offsetEnabled=$("#offsetEnabled"), offsetPanel=$("#offsetPanel"), offsetAngleInput=$("#offsetAngle"), offsetMmInput=$("#offsetMm"), errorOffset=$("#errorOffset");
+
+  // ✅ NEW: toggle for dimensions on canvas
+  const dimsEnabled=$("#dimsEnabled");
+  let showDims = true;
 
   const COS30=Math.cos(Math.PI/6), SIN30=Math.sin(Math.PI/6);
   const dirMap={E:{dx:1,dy:0,dz:0},W:{dx:-1,dy:0,dz:0},N:{dx:0,dy:1,dz:0},S:{dx:0,dy:-1,dz:0},UP:{dx:0,dy:0,dz:1},DOWN:{dx:0,dy:0,dz:-1}};
   let isoSteps=[];
 
-  const view={baseScale:1,baseCx:0,baseCy:0,zoom:1,panX:0,panY:0,rot:-45};
+  // ✅ IMPORTANT: rot must be 0..3 (90° steps). You had -45 which is wrong for this system.
+  // Start orientation example: 3 = 270° (same as -1 mod 4).
+  const view={baseScale:1,baseCx:0,baseCy:0,zoom:1,panX:0,panY:0,rot:3};
   const degToRad=d=>d*Math.PI/180;
+
+  // init dimension toggle state
+  if(dimsEnabled){
+    showDims = !!dimsEnabled.checked;
+    on(dimsEnabled,"change",()=>{
+      showDims = !!dimsEnabled.checked;
+      drawIso();
+    });
+  }
 
   function ensureCanvasDpr(){
     if(!isoCanvas||!ctxIso) return {w:0,h:0,dpr:1};
@@ -601,7 +626,9 @@ UP 30</textarea>
 
   function resetView(){ fitView(false); drawIso(); }
   on(resetViewBtn,"click",resetView);
-  on(rotateViewBtn,"click",()=>{view.rot=(view.rot+1)%4;fitView(true);drawIso();});
+
+  // your button: rotate clockwise (decrement). rotateZ90 normalizes negative values safely.
+  on(rotateViewBtn,"click",()=>{view.rot=(view.rot-1);fitView(true);drawIso();});
 
   function drawMiniAxes(){
     if(!ctxIso) return;
@@ -645,52 +672,6 @@ UP 30</textarea>
   }
 
   // --- Label box on canvas (supports multi-line) ---
-  function drawSegmentLabel(ctx, x1, y1, x2, y2, lines){
-    const arr = Array.isArray(lines) ? lines.filter(Boolean) : [String(lines ?? "")];
-    if(arr.length === 0) return;
-
-    const mx=(x1+x2)/2, my=(y1+y2)/2;
-    const dx=x2-x1, dy=y2-y1;
-    const ang=Math.atan2(dy,dx);
-
-    let rot=ang;
-    if(rot>Math.PI/2 || rot<-Math.PI/2) rot+=Math.PI;
-
-    ctx.save();
-    ctx.translate(mx,my);
-    ctx.rotate(rot);
-
-    ctx.textAlign="center";
-    ctx.textBaseline="middle";
-
-    const fontMain = "12px system-ui";
-    const lineGap = 14;
-
-    let maxW=0;
-    arr.forEach((t,i)=>{
-      ctx.font=fontMain;
-      maxW=Math.max(maxW, ctx.measureText(t).width);
-    });
-
-    const padX=7, padY=6;
-    const boxW=maxW+padX*2;
-    const boxH=(arr.length*lineGap)+padY*2 - (lineGap-12);
-
-    ctx.fillStyle="rgba(2,6,23,.85)";
-    ctx.strokeStyle="rgba(148,163,184,.35)";
-    ctx.lineWidth=1;
-    roundRectPath(ctx, -boxW/2, -boxH/2, boxW, boxH, 6);
-    ctx.fill(); ctx.stroke();
-
-    const startY = -((arr.length-1)*(lineGap/2));
-    arr.forEach((t,i)=>{
-      ctx.font=fontMain;
-      ctx.fillStyle="#e5e7eb";
-      ctx.fillText(t, 0, startY + i*lineGap);
-    });
-
-    ctx.restore();
-  }
 
   // --- CAD-like dimension on canvas (lines align + dots + text follows dim line, no box) ---
   function drawCanvasDimCAD(ctx, a, b, text, outwardSign, opts={}){
@@ -716,7 +697,6 @@ UP 30</textarea>
     ctx.lineCap="round";
     ctx.lineJoin="round";
 
-    // style
     ctx.font=opts.font ?? "12px system-ui";
     const tw=ctx.measureText(text).width;
     const gap=tw/2 + (opts.gapPad ?? 5);
@@ -725,7 +705,7 @@ UP 30</textarea>
     const gx1={x:mx-Math.cos(ang)*gap, y:my-Math.sin(ang)*gap};
     const gx2={x:mx+Math.cos(ang)*gap, y:my+Math.sin(ang)*gap};
 
-    // extension lines MUST end exactly at aDim/bDim (this is the “looks like CAD” fix)
+    // extension lines
     ctx.strokeStyle=opts.extColor ?? "rgba(248,250,252,.65)";
     ctx.lineWidth=opts.extW ?? 1;
     ctx.beginPath();
@@ -741,13 +721,12 @@ UP 30</textarea>
     ctx.moveTo(gx2.x,gx2.y); ctx.lineTo(bDim.x,bDim.y);
     ctx.stroke();
 
-    // terminators (dots)
-    const r = opts.dotR ?? 2.2; // px
+    // dots
+    const r = opts.dotR ?? 2.2;
     ctx.fillStyle=opts.dotFill ?? "#e5e7eb";
     ctx.beginPath(); ctx.arc(aDim.x,aDim.y,r,0,Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.arc(bDim.x,bDim.y,r,0,Math.PI*2); ctx.fill();
 
-    // text follows dim line
     let rot=ang;
     if(rot>Math.PI/2 || rot<-Math.PI/2) rot+=Math.PI;
 
@@ -812,131 +791,175 @@ UP 30</textarea>
     },minor,.06,.14);
   }
 
-  function drawIso(){
-    if(!ctxIso) return;
-    const parsed=parseSteps(points3dInput.value);
-    if(!parsed||parsed.length<1){
-      show(errorIso,true); isoCountOut.textContent="–"; isoLenOut.textContent="–";
-      const {w,h}=ensureCanvasDpr(); ctxIso.clearRect(0,0,w,h); return;
-    }
-    show(errorIso,false);
-    isoSteps=parsed; renderStepsList();
+function drawIso(){
+  if(!ctxIso) return;
 
-    const {verts:pts3d, corners}=stepsToPointsWithCorners(isoSteps);
-    isoCountOut.textContent=String(pts3d.length);
-    isoLenOut.textContent=polylineLength3d(pts3d).toFixed(1)+" mm";
-
-    const proj=pts3d.map(projectIso);
+  const parsed = parseSteps(points3dInput.value);
+  if(!parsed || parsed.length < 1){
+    show(errorIso,true);
+    isoCountOut.textContent="–";
+    isoLenOut.textContent="–";
     const {w,h}=ensureCanvasDpr();
-    if(!isFinite(view.baseScale)||view.baseScale<=0) fitView(false);
-
-    const toCanvas=p=>{
-      const k=view.baseScale*view.zoom;
-      return {x:view.baseCx+p.x*k+view.panX,y:view.baseCy+p.y*k+view.panY};
-    };
-
-    // centroid in canvas coords (for outward placement)
-    const centroid=proj.reduce((acc,p)=>({x:acc.x+p.x,y:acc.y+p.y}),{x:0,y:0});
-    centroid.x/=proj.length; centroid.y/=proj.length;
-    const centroidC=toCanvas(centroid);
-
-    const outwardSignFor2D=(a,b)=>{
-      const dx=b.x-a.x, dy=b.y-a.y, L=Math.hypot(dx,dy);
-      if(L<1e-9) return 1;
-      const nx=-dy/L, ny=dx/L;
-      const mx=(a.x+b.x)/2, my=(a.y+b.y)/2, off=10;
-      const pPlus={x:mx+nx*off,y:my+ny*off}, pMinus={x:mx-nx*off,y:my-ny*off};
-      const dPlus=Math.hypot(pPlus.x-centroidC.x,pPlus.y-centroidC.y);
-      const dMinus=Math.hypot(pMinus.x-centroidC.x,pMinus.y-centroidC.y);
-      return (dPlus>=dMinus)?1:-1;
-    };
-
     ctxIso.clearRect(0,0,w,h);
-    drawIsoGrid(ctxIso,pts3d,toCanvas,w,h);
-    drawMiniAxes();
+    return;
+  }
 
-    // main polyline
-    ctxIso.strokeStyle="#22c55e"; ctxIso.lineWidth=4;
+  show(errorIso,false);
+  isoSteps = parsed;
+  renderStepsList();
+
+  const { verts: pts3d, corners } = stepsToPointsWithCorners(isoSteps);
+  isoCountOut.textContent = String(pts3d.length);
+  isoLenOut.textContent = polylineLength3d(pts3d).toFixed(1) + " mm";
+
+  const proj = pts3d.map(projectIso);
+  const {w,h} = ensureCanvasDpr();
+  if(!isFinite(view.baseScale) || view.baseScale<=0) fitView(false);
+
+  const toCanvas = p => {
+    const k=view.baseScale*view.zoom;
+    return {
+      x: view.baseCx + p.x*k + view.panX,
+      y: view.baseCy + p.y*k + view.panY
+    };
+  };
+
+  // centroid in canvas coords (for outward placement)
+  const centroid = proj.reduce((acc,p)=>({x:acc.x+p.x,y:acc.y+p.y}),{x:0,y:0});
+  centroid.x/=proj.length; centroid.y/=proj.length;
+  const centroidC = toCanvas(centroid);
+
+  const outwardSignFor2D = (a,b)=>{
+    const dx=b.x-a.x, dy=b.y-a.y, L=Math.hypot(dx,dy);
+    if(L<1e-9) return 1;
+    const nx=-dy/L, ny=dx/L;
+    const mx=(a.x+b.x)/2, my=(a.y+b.y)/2, off=10;
+    const pPlus ={x:mx+nx*off, y:my+ny*off};
+    const pMinus={x:mx-nx*off, y:my-ny*off};
+    const dPlus =Math.hypot(pPlus.x-centroidC.x, pPlus.y-centroidC.y);
+    const dMinus=Math.hypot(pMinus.x-centroidC.x,pMinus.y-centroidC.y);
+    return (dPlus>=dMinus)?1:-1;
+  };
+
+  // --- clear + background ---
+  ctxIso.clearRect(0,0,w,h);
+  drawIsoGrid(ctxIso, pts3d, toCanvas, w, h);
+  drawMiniAxes();
+
+  // --- main polyline ---
+  ctxIso.strokeStyle="#22c55e";
+  ctxIso.lineWidth=4;
+  ctxIso.beginPath();
+  const p0 = toCanvas(proj[0]);
+  ctxIso.moveTo(p0.x,p0.y);
+  for(let i=1;i<proj.length;i++){
+    const pi=toCanvas(proj[i]);
+    ctxIso.lineTo(pi.x,pi.y);
+  }
+  ctxIso.stroke();
+
+  // --- helper right-angle path for OFFSET steps (dashed) ---
+  ctxIso.save();
+  ctxIso.setLineDash([6,4]);
+  ctxIso.strokeStyle="rgba(56,189,248,.55)";
+  ctxIso.lineWidth=2;
+  for(const c of corners){
+    if(!c) continue;
+    const a  = toCanvas(projectIso(c.start));
+    const mid= toCanvas(projectIso(c.corner));
+    const b  = toCanvas(projectIso(c.end));
     ctxIso.beginPath();
-    const p0=toCanvas(proj[0]); ctxIso.moveTo(p0.x,p0.y);
-    for(let i=1;i<proj.length;i++){const pi=toCanvas(proj[i]); ctxIso.lineTo(pi.x,pi.y);}
+    ctxIso.moveTo(a.x,a.y);
+    ctxIso.lineTo(mid.x,mid.y);
+    ctxIso.lineTo(b.x,b.y);
     ctxIso.stroke();
+  }
+  ctxIso.restore();
 
-    // helper right-angle path for OFFSET steps (dashed)
-    ctxIso.save();
-    ctxIso.setLineDash([6,4]);
-    ctxIso.strokeStyle="rgba(56,189,248,.55)";
-    ctxIso.lineWidth=2;
-    for(const c of corners){
-      if(!c) continue;
-      const a=toCanvas(projectIso(c.start));
-      const mid=toCanvas(projectIso(c.corner));
-      const b=toCanvas(projectIso(c.end));
-      ctxIso.beginPath();
-      ctxIso.moveTo(a.x,a.y);
-      ctxIso.lineTo(mid.x,mid.y);
-      ctxIso.lineTo(b.x,b.y);
-      ctxIso.stroke();
-    }
-    ctxIso.restore();
-
-    // points
-    for(let i=0;i<proj.length;i++){
-      const c=toCanvas(proj[i]); ctxIso.beginPath();
-      if(i===0){
-        ctxIso.fillStyle="#e5e7eb"; ctxIso.arc(c.x,c.y,5,0,Math.PI*2); ctxIso.fill();
-        ctxIso.strokeStyle="rgba(248,250,252,.7)"; ctxIso.lineWidth=2; ctxIso.stroke();
-      }else if(i===proj.length-1){
-        ctxIso.fillStyle="#f97316"; ctxIso.arc(c.x,c.y,5,0,Math.PI*2); ctxIso.fill();
-        ctxIso.strokeStyle="rgba(2,6,23,.8)"; ctxIso.lineWidth=2; ctxIso.stroke();
-      }else{
-        ctxIso.fillStyle="#e5e7eb"; ctxIso.arc(c.x,c.y,3,0,Math.PI*2); ctxIso.fill();
-      }
-    }
-
-    // segment labels + OFF offset dimension (CAD-like)
-    for(let i=0;i<proj.length-1;i++){
-      const a=toCanvas(proj[i]), b=toCanvas(proj[i+1]);
-      const s=isoSteps[i]; if(!s) continue;
-
-      if(Math.hypot(b.x-a.x,b.y-a.y) >= 22){
-        if(s.type==="OFF"){
-          drawSegmentLabel(ctxIso,a.x,a.y,b.x,b.y,[`L ${s.mm.toFixed(1)} mm`]);
-        }else{
-          drawSegmentLabel(ctxIso,a.x,a.y,b.x,b.y,`${s.mm.toFixed(1)} mm`);
-        }
-      }
-
-      // OFF: dimension on true offset leg (corner -> end) with CAD look
-      if(s.type==="OFF" && corners[i]){
-        const mid=toCanvas(projectIso(corners[i].corner));
-        const end=toCanvas(projectIso(corners[i].end));
-        const sign=outwardSignFor2D(mid,end);
-
-        drawCanvasDimCAD(
-          ctxIso,
-          mid,
-          end,
-          `off ${s.off.toFixed(1)} mm`,
-          sign,
-          {
-            color:"rgba(56,189,248,.95)",
-            extColor:"rgba(56,189,248,.70)",
-            offPx:12,
-            minLenPx:28,
-            font:"12px system-ui",
-            lineW:1.2,
-            extW:1.0,
-            dotR:2.0,
-            dotFill:"rgba(56,189,248,.95)",
-            textColor:"#e5e7eb",
-            gapPad:5
-          }
-        );
-      }
+  // --- points ---
+  for(let i=0;i<proj.length;i++){
+    const c=toCanvas(proj[i]);
+    ctxIso.beginPath();
+    if(i===0){
+      ctxIso.fillStyle="#e5e7eb";
+      ctxIso.arc(c.x,c.y,5,0,Math.PI*2); ctxIso.fill();
+      ctxIso.strokeStyle="rgba(248,250,252,.7)";
+      ctxIso.lineWidth=2; ctxIso.stroke();
+    }else if(i===proj.length-1){
+      ctxIso.fillStyle="#f97316";
+      ctxIso.arc(c.x,c.y,5,0,Math.PI*2); ctxIso.fill();
+      ctxIso.strokeStyle="rgba(2,6,23,.8)";
+      ctxIso.lineWidth=2; ctxIso.stroke();
+    }else{
+      ctxIso.fillStyle="#e5e7eb";
+      ctxIso.arc(c.x,c.y,3,0,Math.PI*2); ctxIso.fill();
     }
   }
 
+  // --- dimensions (ONLY if toggle is ON) ---
+  if(showDims){
+    for(let i=0;i<proj.length-1;i++){
+      const a=toCanvas(proj[i]);
+      const b=toCanvas(proj[i+1]);
+      const s=isoSteps[i];
+      if(!s) continue;
+
+      const signSeg = outwardSignFor2D(a,b);
+
+      // Segment dimension (CARD or OFF hypotenuse L)
+      if(s.type==="OFF"){
+        drawCanvasDimCAD(ctxIso, a, b, `L ${s.mm.toFixed(1)} mm`, signSeg, {
+          color:"#e5e7eb",
+          extColor:"rgba(248,250,252,.65)",
+          offPx:10,
+          minLenPx:26,
+          font:"12px system-ui",
+          lineW:1.3,
+          extW:1.0,
+          dotR:2.2,
+          dotFill:"#e5e7eb",
+          textColor:"#e5e7eb",
+          gapPad:5
+        });
+      }else{
+        drawCanvasDimCAD(ctxIso, a, b, `${s.mm.toFixed(1)} mm`, signSeg, {
+          color:"#e5e7eb",
+          extColor:"rgba(248,250,252,.65)",
+          offPx:10,
+          minLenPx:26,
+          font:"12px system-ui",
+          lineW:1.3,
+          extW:1.0,
+          dotR:2.2,
+          dotFill:"#e5e7eb",
+          textColor:"#e5e7eb",
+          gapPad:5
+        });
+      }
+
+      // OFF: dimension on true offset leg (corner -> end)
+      if(s.type==="OFF" && corners[i]){
+        const mid = toCanvas(projectIso(corners[i].corner));
+        const end = toCanvas(projectIso(corners[i].end));
+        const signOff = outwardSignFor2D(mid,end);
+
+        drawCanvasDimCAD(ctxIso, mid, end, `off ${s.off.toFixed(1)} mm`, signOff, {
+          color:"rgba(56,189,248,.95)",
+          extColor:"rgba(56,189,248,.70)",
+          offPx:12,
+          minLenPx:28,
+          font:"12px system-ui",
+          lineW:1.2,
+          extW:1.0,
+          dotR:2.0,
+          dotFill:"rgba(56,189,248,.95)",
+          textColor:"#e5e7eb",
+          gapPad:5
+        });
+      }
+    }
+  }
+}
   on(offsetEnabled,"change",()=>{show(offsetPanel,offsetEnabled.checked); show(errorOffset,false);});
   const validateOffsetInputs=()=>{
     const ang=readNum(offsetAngleInput), off=readNum(offsetMmInput);
@@ -972,7 +995,6 @@ UP 30</textarea>
     const parsed=parseSteps(points3dInput.value);
     if(parsed){isoSteps=parsed;renderStepsList();show(errorIso,false);fitView(true);drawIso();}
   });
-
 
   // zoom + pan
   const getCanvasPointFromEvent=e=>{const r=isoCanvas.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};};
@@ -1079,14 +1101,11 @@ UP 30</textarea>
       const steps = parsed;
       const { verts: pts3d, corners } = stepsToPointsWithCorners(steps);
 
-      // === Build PDF document ===
       const doc = new JsPDF({ unit:"mm", format:"a4", orientation:"landscape" });
       const pageW = doc.internal.pageSize.getWidth();
       const pageH = doc.internal.pageSize.getHeight();
 
-      // --- Arrow/terminators helpers (PDF) ---
       function drawArrowHeadPDF(doc, x, y, angRad, size){
-        // filled small triangle (CAD-like)
         const left  = angRad + Math.PI*0.85;
         const right = angRad - Math.PI*0.85;
 
@@ -1098,19 +1117,16 @@ UP 30</textarea>
         doc.setFillColor(0,0,0);
         if(typeof doc.triangle === "function") doc.triangle(x, y, x1, y1, x2, y2, "F");
         else{
-          // fallback: V
           doc.line(x,y, x1,y1);
           doc.line(x,y, x2,y2);
         }
       }
 
-      // --- Label collision memory (dims + angles share this) ---
       const placedLabelRects = [];
       const rectOverlap = (a,b)=>!(a.x+a.w<b.x || b.x+b.w<a.x || a.y+a.h<b.y || b.y+b.h<a.y);
       const collidesAny = (r)=>placedLabelRects.some(p=>rectOverlap(p,r));
       const rememberRect = (r)=>placedLabelRects.push(r);
 
-      // --- choose best side (+/- normal) for a dimension based on score ---
       function chooseDimSide(a, b, centroid, frame){
         const dx=b.x-a.x, dy=b.y-a.y;
         const L=Math.hypot(dx,dy);
@@ -1163,7 +1179,6 @@ UP 30</textarea>
         return (scorePlus >= scoreMinus) ? 1 : -1;
       }
 
-      // --- draw a clean dimension: EXT lines end at dim endpoints (the CAD alignment fix) + dot terminators ---
       function drawDimAlongSegment(a, b, valueText, centroid, frame, style = {}) {
         const dx = b.x - a.x, dy = b.y - a.y;
         const segL = Math.hypot(dx, dy);
@@ -1187,13 +1202,11 @@ UP 30</textarea>
         const dimColor = style.color ?? [0, 0, 0];
         const extColor = style.extColor ?? [0, 0, 0];
 
-        // extension lines (MUST go to aDim/bDim)
         doc.setDrawColor(...extColor);
         doc.setLineWidth(style.extW ?? 0.15);
         doc.line(a.x, a.y, aDim.x, aDim.y);
         doc.line(b.x, b.y, bDim.x, bDim.y);
 
-        // dim line split around text
         doc.setDrawColor(...dimColor);
         doc.setLineWidth(style.lineW ?? 0.20);
 
@@ -1216,26 +1229,22 @@ UP 30</textarea>
         doc.line(aDim.x, aDim.y, gx1, gy1);
         doc.line(gx2, gy2, bDim.x, bDim.y);
 
-        // terminators: dots (matches your gråa referens)
-        const r = style.dotR ?? 0.55; // mm
+        const r = style.dotR ?? 0.55;
         doc.setFillColor(...(style.dotFill ?? [0,0,0]));
         doc.circle(aDim.x, aDim.y, r, "F");
         doc.circle(bDim.x, bDim.y, r, "F");
 
-        // text rotated with dim line
         let rot = ang * 180 / Math.PI;
         if (rot > 90 || rot < -90) rot += 180;
 
         doc.setTextColor(...(style.textColor ?? [0,0,0]));
         doc.text(valueText, mx, my + (style.textNudge ?? 0.6), { angle: rot, align: "center" });
 
-        // collision memory
         const bw = tw + 3.0;
         const bh = 4.6;
         rememberRect({ x: mx - bw / 2, y: my - bh / 2, w: bw, h: bh, kind: "dim" });
       }
 
-      // Angle leader: collision-correct + uses collidesAny (fixed)
       function drawAngleLeader(doc, vertexIndex, pts2, centroid){
         const i=vertexIndex;
         if(i<=0 || i>=pts2.length-1) return;
@@ -1299,7 +1308,6 @@ UP 30</textarea>
       const tableX0=drawX0 + drawW + gap;
       const tableY0=margin;
 
-      // --- Project points (ISO) ---
       const proj = pts3d.map(projectIso);
       let toPdf;
 
@@ -1350,7 +1358,6 @@ UP 30</textarea>
       centroid.x/=pts2.length;
       centroid.y/=pts2.length;
 
-      // === Frame ===
       doc.setDrawColor(0);
       doc.setLineWidth(0.35);
       doc.rect(drawX0,drawY0,drawW,drawH);
@@ -1363,16 +1370,14 @@ UP 30</textarea>
       doc.setFontSize(9);
       doc.text(`Punkter: ${pts3d.length}`, drawX0+4, drawY0+11);
       doc.text(`Total längd (3D): ${polylineLength3d(pts3d).toFixed(1)} mm`, drawX0+4, drawY0+15);
-      doc.text(`Vy-rotation: ${view.rot*90}°`, drawX0+4, drawY0+19);
+      doc.text(`Vy-rotation: ${((view.rot%4)+4)%4*90}°`, drawX0+4, drawY0+19);
 
-      // === Polyline ===
       doc.setDrawColor(16,120,60);
       doc.setLineWidth(1.1);
       for(let i=1;i<pts2.length;i++){
         doc.line(pts2[i-1].x,pts2[i-1].y, pts2[i].x,pts2[i].y);
       }
 
-      // === Helper right-angle path for OFF steps (dashed) ===
       doc.setDrawColor(56,189,248);
       doc.setLineWidth(0.50);
       if(typeof doc.setLineDash === "function") doc.setLineDash([2.2, 1.6]);
@@ -1386,7 +1391,6 @@ UP 30</textarea>
       }
       if(typeof doc.setLineDash === "function") doc.setLineDash([]);
 
-      // === Points ===
       for(let i=0;i<pts2.length;i++){
         const p=pts2[i];
         if(i===0) doc.setFillColor(0);
@@ -1397,7 +1401,6 @@ UP 30</textarea>
 
       const frame = { x: drawX0, y: drawY0, w: drawW, h: drawH };
 
-      // === Dimensions (CAD-like) ===
       for(let i=0;i<steps.length;i++){
         const s=steps[i];
         const a=pts2[i], b=pts2[i+1];
@@ -1424,12 +1427,10 @@ UP 30</textarea>
         }
       }
 
-      // === Angle leaders ===
       for(let i=1;i<pts2.length-1;i++){
         drawAngleLeader(doc, i, pts2, centroid);
       }
 
-      // === Table ===
       doc.setDrawColor(0);
       doc.setLineWidth(0.35);
       doc.rect(tableX0, tableY0, tableW, drawH);
