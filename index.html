@@ -142,6 +142,37 @@ body{
   }
   h1, .subtitle{ text-align:center; }
 }
+/* Tvinga riktig centrerad layout på iOS Safari */
+body{
+  display:block;            /* viktig: sluta med flex på body */
+}
+
+/* centrerar hela appen robust */
+.app{
+  margin: 0 auto;
+  width: min(780px, 100%);
+}
+
+/* se till att grid alltid stretchar barnen */
+.layout{
+  justify-items: stretch;
+  align-items: start;
+}
+
+/* tvinga att båda sektionerna fyller kolumnen */
+.layout > section{
+  width: 100%;
+  min-width: 0;
+}
+
+/* alla cards ska fylla bredden och ligga centrerat */
+.diagram-card,
+.results,
+.howto,
+.iso-steps{
+  width: 100%;
+  margin-inline: auto;
+}
   </style>
 </head>
 <body>
