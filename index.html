@@ -841,6 +841,14 @@ function drawIso(){
     return (dPlus>=dMinus)?1:-1;
   };
 
+  const sameAxisDir = (a,b)=>String(a||"").toUpperCase()===String(b||"").toUpperCase();
+
+  // ✅ NYTT: sprid måtten mer när man zoomar ut
+  // zoom=1 => ~1.0
+  // zoom=0.25 => ~2.0 (måtten hamnar längre ifrån)
+  // zoom=4 => ~0.5 (måtten kommer närmare, men OK)
+  const dimSpread = clamp(1/Math.sqrt(Math.max(view.zoom, 1e-6)), 0.75, 2.2);
+
   // --- clear + background ---
   ctxIso.clearRect(0,0,w,h);
   drawIsoGrid(ctxIso, pts3d, toCanvas, w, h);
@@ -911,7 +919,7 @@ function drawIso(){
         drawCanvasDimCAD(ctxIso, a, b, `L ${s.mm.toFixed(1)} mm`, signSeg, {
           color:"#e5e7eb",
           extColor:"rgba(248,250,252,.65)",
-          offPx:10,
+          offPx: (14 * dimSpread),      // ⬅️ längre ifrån
           minLenPx:26,
           font:"12px system-ui",
           lineW:1.3,
@@ -925,7 +933,7 @@ function drawIso(){
         drawCanvasDimCAD(ctxIso, a, b, `${s.mm.toFixed(1)} mm`, signSeg, {
           color:"#e5e7eb",
           extColor:"rgba(248,250,252,.65)",
-          offPx:10,
+          offPx: (14 * dimSpread),      // ⬅️ längre ifrån
           minLenPx:26,
           font:"12px system-ui",
           lineW:1.3,
@@ -946,7 +954,7 @@ function drawIso(){
         drawCanvasDimCAD(ctxIso, mid, end, `off ${s.off.toFixed(1)} mm`, signOff, {
           color:"rgba(56,189,248,.95)",
           extColor:"rgba(56,189,248,.70)",
-          offPx:12,
+          offPx: (20 * dimSpread),      // ⬅️ ännu lite längre
           minLenPx:28,
           font:"12px system-ui",
           lineW:1.2,
@@ -956,11 +964,38 @@ function drawIso(){
           textColor:"#e5e7eb",
           gapPad:5
         });
+
+        // TOTAL från föregående stegs START till kateten (corner)
+        const prev = isoSteps[i-1];
+        if(prev && prev.type==="CARD" && sameAxisDir(prev.dir, s.dir)){
+          const startPrev3d = pts3d[i-1];
+          const corner3d    = corners[i].corner;
+
+          const A = toCanvas(projectIso(startPrev3d));
+          const B = toCanvas(projectIso(corner3d));
+          const signTot = outwardSignFor2D(A,B);
+
+          const totalToKatet = prev.mm + s.P;
+
+          drawCanvasDimCAD(ctxIso, A, B, `tot ${totalToKatet.toFixed(1)} mm`, signTot, {
+            color:"rgba(250,204,21,.95)",
+            extColor:"rgba(250,204,21,.70)",
+            offPx: (26 * dimSpread),     // ⬅️ längst ut så den inte krockar
+            minLenPx:30,
+            font:"12px system-ui",
+            lineW:1.15,
+            extW:1.0,
+            dotR:2.0,
+            dotFill:"rgba(250,204,21,.95)",
+            textColor:"#e5e7eb",
+            gapPad:5
+          });
+        }
       }
     }
   }
 }
-  on(offsetEnabled,"change",()=>{show(offsetPanel,offsetEnabled.checked); show(errorOffset,false);});
+on(offsetEnabled,"change",()=>{show(offsetPanel,offsetEnabled.checked); show(errorOffset,false);});
   const validateOffsetInputs=()=>{
     const ang=readNum(offsetAngleInput), off=readNum(offsetMmInput);
     if(!isFinite(ang)||!isFinite(off)||off<=0) return null;
