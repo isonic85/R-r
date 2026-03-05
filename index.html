@@ -183,14 +183,14 @@ body{
   <div class="layout" id="layoutRoot">
     <section>
       <div class="mode-tabs">
-        <button class="tab-btn active" data-mode="heightAngle">Höjd + vinkel (som ritningen)</button>
+        <button class="tab-btn active" data-mode="heightAngle">90° kick</button>
         <button class="tab-btn" data-mode="howto">Hur du använder detta</button>
         <button class="tab-btn" data-mode="iso3d">3D ISO</button>
       </div>
 
       <div id="mode-heightAngle">
         <div class="field">
-          <label for="height2">Höjd från referenslinje <span class="unit">(mm)</span></label>
+          <label for="height2">Höjd från referenslinje (offset) <span class="unit">(mm)</span></label>
           <input id="height2" type="number" min="0" step="0.1" value="30" />
         </div>
         <div class="field">
@@ -209,11 +209,14 @@ body{
 
       <div id="mode-howto" class="hidden">
         <div class="howto">
-          <h3>Hur du använder måtten ute på jobbet</h3>
+          <h3>Hur du har kontroll på en 90°kick</h3>
           <ol>
-            <li><strong>Välj 0-punkt.</strong> Markera på röret var det ska hamna i slutläget.</li>
-            <li><strong>Skriv in höjd + vinkel.</strong> Appen räknar L och fx.</li>
-            <li><strong>Mät/markera.</strong> Följ dina markeringar och bocka till vinkeln.</li>
+            <li><strong>Välj 0-punkt, där 90° skal vara.</strong> Markera på röret var det ska hamna i slutläget.</li>
+            <li><strong>Skriv in höjd (offset) + vinkel.</strong> Appen räknar L och fx.</li>
+            <li><strong>Ta fx mått bakåt, där hamnar knäcken, från knäck ta måttet L där skal 90° bockas.</strong> Följ dina markeringar och bocka till vinkeln.</li>
+            <li>för ännu mer kontrol att centrum på radien hamnar exakt, så skal man ta hänsyn till båg längden på knäcken, samt en förskjutning på knäcken när man vill ha exakt samma CC mått när flera rör ligger i klammer, men de kommer vi till senare uppdatering</li>
+            <li><strong>3D ISO</strong> På denna flik, kan du i rita upp ditt rör. Här får du total längden på röret du ritar upp, samt om du gör en offset så räknar den ut och markerat ut L längden direkt efter den vinkel och offsett du skriver in. Lek lite med detta och kom med feedback, OBS! glöm inte att av bocka Offsett rutan när du skal göra 90°.</li>
+            <li><strong>PDF Export</strong> Detta skapar en pdf fil med utsatta mått på röret du ritat, detta är under utveckling och behövs finslipas</li>
           </ol>
         </div>
       </div>
@@ -223,7 +226,6 @@ body{
           <div class="diagram-header">
             <span>3D ISO-visning</span>
             <div class="view-actions">
-              <button class="mini-btn" id="fitViewBtn" title="Passa modellen i rutan">Passa</button>
               <button class="mini-btn" id="rotateViewBtn" title="Rotera vyn 90°">Rotera 90°</button>
               <button class="mini-btn" id="resetViewBtn" title="Återställ zoom/pan">Återställ</button>
               <button class="mini-btn" id="exportPdfBtn" title="Exportera som PDF (A4 liggande)">Exportera PDF</button>
@@ -297,7 +299,6 @@ UP 30</textarea>
             <ol class="iso-list" id="stepsList"></ol>
           </div>
 
-          <button class="calc" id="drawIsoBtn">Rita ISO <span aria-hidden="true">➜</span></button>
           <div id="errorIso" class="error">Kunde inte läsa stegen. Ex: <strong>E 120</strong> eller <strong>O E 45 100</strong>.</div>
 
           <div class="results">
@@ -327,7 +328,7 @@ UP 30</textarea>
         <text id="labelAngle" class="dim-text" x="40" y="190">v</text>
       </svg>
       <div class="note">
-        Grönt = rakt rör, blått = höjd, orange = lutande rördel L.
+        Grönt = rakt rör, blått = offset, orange = lutande rördel L.
         0-punkten är där proj-linjen möter det raka röret.
       </div>
     </section>
@@ -599,7 +600,6 @@ UP 30</textarea>
   }
 
   function resetView(){ fitView(false); drawIso(); }
-  on(fitViewBtn,"click",()=>{fitView(true);drawIso();});
   on(resetViewBtn,"click",resetView);
   on(rotateViewBtn,"click",()=>{view.rot=(view.rot+1)%4;fitView(true);drawIso();});
 
@@ -973,7 +973,6 @@ UP 30</textarea>
     if(parsed){isoSteps=parsed;renderStepsList();show(errorIso,false);fitView(true);drawIso();}
   });
 
-  on(drawIsoBtn,"click",e=>{e.preventDefault();fitView(true);drawIso();});
 
   // zoom + pan
   const getCanvasPointFromEvent=e=>{const r=isoCanvas.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};};
