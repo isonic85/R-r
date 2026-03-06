@@ -2,110 +2,66 @@
 <html lang="sv">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"
+  />
   <title>Rörbockning – Pythagoras & vinkel</title>
+
   <style>
-    :root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.4;color-scheme:dark}
-    html,body{touch-action:manipulation}
-    *{box-sizing:border-box}
-    body{margin:0;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;background:radial-gradient(circle at top,#1e293b,#020617);color:#e5e7eb;padding:8px}
-    .app{width:100%;max-width:780px;background:rgba(15,23,42,.96);border-radius:18px;padding:18px 18px 14px;box-shadow:0 18px 40px rgba(0,0,0,.6),0 0 0 1px rgba(148,163,184,.12);backdrop-filter:blur(16px)}
-    h1{font-size:1.3rem;margin:0 0 4px}
-    .subtitle{font-size:.85rem;color:#9ca3af;margin-bottom:14px}
-    .layout{display:grid;grid-template-columns:1.1fr 1fr;gap:18px}
-    .layout.iso-only{grid-template-columns:1fr}
-    @media (max-width:780px){.layout{grid-template-columns:1fr}}
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.4;
+      color-scheme: dark;
 
-    .mode-tabs{display:inline-flex;border-radius:999px;padding:3px;background:#020617;border:1px solid #4b5563;margin-bottom:12px;max-width:100%;overflow-x:auto}
-    .tab-btn{border:0;background:transparent;color:#9ca3af;font-size:.8rem;padding:5px 10px;border-radius:999px;cursor:pointer;white-space:nowrap;flex-shrink:0}
-    .tab-btn.active{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff}
+      --bg-page-top: #1e293b;
+      --bg-page-bottom: #020617;
+      --bg-panel: rgba(15, 23, 42, 0.96);
+      --bg-card: rgba(15, 23, 42, 0.9);
+      --bg-input: #020617;
 
-    .field{margin-bottom:9px}
-    label{font-size:.8rem;display:block;margin-bottom:3px;color:#cbd5f5}
-    .unit{font-size:.75rem;color:#6b7280;margin-left:2px}
-    input[type="number"],textarea.iso-input{
-      width:100%;padding:8px 9px;border-radius:9px;border:1px solid #4b5563;background:#020617;color:#e5e7eb;
-      font-size:.9rem;outline:none;transition:border-color .15s ease,box-shadow .15s ease
-    }
-    input[type="number"]:focus,textarea.iso-input:focus{border-color:#38bdf8;box-shadow:0 0 0 1px rgba(56,189,248,.5)}
-    textarea.iso-input{resize:vertical}
+      --text-main: #e5e7eb;
+      --text-soft: #cbd5f5;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      --text-error: #fecaca;
 
-    button.calc{
-      margin-top:6px;width:100%;padding:9px 12px;border-radius:10px;border:0;background:linear-gradient(135deg,#22c55e,#16a34a);
-      color:#fff;font-weight:600;font-size:.9rem;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;
-      transition:transform .08s ease,box-shadow .08s ease,filter .12s ease
-    }
-    button.calc:hover{filter:brightness(1.05);box-shadow:0 10px 25px rgba(22,163,74,.4);transform:translateY(-1px)}
-    button.calc:active{transform:translateY(0);box-shadow:none}
+      --border: #4b5563;
+      --border-soft: rgba(148, 163, 184, 0.3);
+      --border-dashed: rgba(148, 163, 184, 0.45);
 
-    .results{margin-top:10px;padding:10px 11px;border-radius:12px;background:rgba(15,23,42,.9);border:1px solid rgba(148,163,184,.3);font-size:.85rem}
-    .results-row{display:flex;justify-content:space-between;margin-bottom:4px}
-    .results-row .label{color:#9ca3af}
-    .results-row .value{font-variant-numeric:tabular-nums;font-weight:600}
-    .note{font-size:.75rem;color:#9ca3af;margin-top:6px}
-    .error{margin-top:6px;color:#fecaca;font-size:.78rem;display:none}
+      --green: #22c55e;
+      --green-dark: #16a34a;
+      --blue: #38bdf8;
+      --orange: #f97316;
+      --yellow: #facc15;
 
-    .diagram-card{background:radial-gradient(circle at top left,#0f172a,#020617);border-radius:14px;padding:10px;border:1px solid rgba(148,163,184,.3)}
-    .diagram-header{font-size:.8rem;color:#cbd5f5;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;gap:8px}
-    .view-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
-    .mini-btn{padding:6px 10px;border-radius:10px;border:1px solid #4b5563;background:rgba(2,6,23,.35);color:#e5e7eb;font-weight:700;font-size:.78rem;cursor:pointer}
-    .mini-btn:hover{border-color:#38bdf8}
-    .badge{font-size:.7rem;padding:2px 7px;border-radius:999px;border:1px solid #4b5563;color:#9ca3af;white-space:nowrap}
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --radius-sm: 12px;
+      --radius-xs: 10px;
+      --radius-pill: 999px;
 
-    svg{width:100%;height:auto;max-height:280px;display:block}
-    .axis{stroke:#4b5563;stroke-width:1;stroke-dasharray:3 3}
-    .leg{stroke-width:3;fill:none}
-    .leg.horizontal{stroke:#22c55e}
-    .leg.vertical{stroke:#38bdf8}
-    .hyp{stroke:#f97316;stroke-width:3;fill:none}
-    .point{fill:#e5e7eb;stroke:#020617;stroke-width:1.2}
-    .dim-text{font-size:9px;fill:#e5e7eb;paint-order:stroke;stroke:#020617;stroke-width:1px}
-
-    .howto{margin-top:6px;padding:10px 11px;border-radius:12px;background:rgba(15,23,42,.9);border:1px dashed rgba(148,163,184,.6);font-size:.82rem}
-    .howto h3{margin:0 0 6px;font-size:.9rem}
-    .howto ol{margin:0;padding-left:18px}
-    .howto li{margin-bottom:4px}
-
-    .iso-controls{display:grid;grid-template-columns:1fr;gap:10px}
-    .iso-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center}
-    .iso-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-    .iso-btn{
-      padding:10px 8px;border-radius:10px;border:1px solid #4b5563;background:#020617;color:#e5e7eb;font-weight:700;cursor:pointer
-    }
-    .iso-btn:hover{border-color:#38bdf8}
-    .iso-secondary{
-      padding:10px;border-radius:10px;border:1px solid #4b5563;background:transparent;color:#9ca3af;font-weight:600;cursor:pointer
-    }
-    .iso-secondary:hover{border-color:#38bdf8;color:#e5e7eb}
-
-    .iso-steps{margin-top:8px;padding:10px 11px;border-radius:12px;background:rgba(15,23,42,.9);border:1px dashed rgba(148,163,184,.45);font-size:.82rem}
-    .iso-steps-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
-    .iso-chip{font-size:.72rem;padding:2px 8px;border-radius:999px;border:1px solid #4b5563;color:#9ca3af}
-    .iso-list{margin:0;padding-left:18px}
-    .iso-list li{margin:3px 0;color:#cbd5f5}
-
-    .offset-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px}
-    .offset-toggle{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;border:1px solid #4b5563;background:rgba(2,6,23,.55);user-select:none}
-    .offset-toggle input[type="checkbox"]{width:16px;height:16px;accent-color:#38bdf8}
-    .offset-toggle span{font-size:.85rem;color:#e5e7eb;font-weight:700}
-    .offset-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end}
-    @media (max-width:520px){.offset-grid{grid-template-columns:1fr}}
-
-    #isoCanvas{width:100%;height:auto;display:block;border-radius:12px;background:#020617;border:1px solid rgba(148,163,184,.3);aspect-ratio:5/3;touch-action:none}
-    @media (max-width:520px){#isoCanvas{aspect-ratio:4/3}}
-    @media (max-width:520px){.iso-canvas-card{position:sticky;top:8px;z-index:20}}
-    @media (max-width:480px){
-      h1{font-size:1.1rem}.subtitle{font-size:.8rem;margin-bottom:10px}.app{padding:12px 12px 10px}
-      .results{font-size:.8rem}.note{font-size:.7rem}.howto{font-size:.8rem}
+      --shadow-main:
+        0 18px 40px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(148, 163, 184, 0.12);
     }
 
-    .hidden{display:none!important}
-    .m0{margin:0!important}
-    .mb0{margin-bottom:0!important}
+    * {
+      box-sizing: border-box;
+    }
 
-    /* 1) Safe-area + stoppa horisontell “drift” */
-    body{
-      overflow-x:hidden;
+    html,
+    body {
+      min-height: 100%;
+      margin: 0;
+      touch-action: manipulation;
+    }
+
+    body {
+      overflow-x: hidden;
+      background: radial-gradient(circle at top, var(--bg-page-top), var(--bg-page-bottom));
+      color: var(--text-main);
       padding:
         calc(8px + env(safe-area-inset-top))
         calc(8px + env(safe-area-inset-right))
@@ -113,1417 +69,2745 @@
         calc(8px + env(safe-area-inset-left));
     }
 
-    /* 2) Tabs: gör att knapparna hamnar centrerat på mobil */
-    .mode-tabs{
-      display:flex;
-      width:100%;
-      justify-content:center;
-    }
-
-    /* om tabs blir för breda: behåll scroll men starta från vänster */
-    @media (max-width:420px){
-      .mode-tabs{
-        justify-content:flex-start;
-        scroll-snap-type:x mandatory;
-      }
-      .tab-btn{ scroll-snap-align:center; }
-    }
-
-    /* 3) ISO-header: gör att den ser centrerad ut på telefon */
-    @media (max-width:780px){
-      .diagram-header{
-        flex-wrap:wrap;
-        justify-content:center;
-        text-align:center;
-        gap:10px;
-      }
-      .view-actions{
-        justify-content:center;
-        width:100%;
-      }
-      h1, .subtitle{ text-align:center; }
-    }
-
-    /* Tvinga riktig centrerad layout på iOS Safari */
-    body{
-      display:block;
-    }
-
-    /* centrerar hela appen robust */
-    .app{
-      margin: 0 auto;
+    .app {
       width: min(780px, 100%);
+      margin: 0 auto;
+      background: var(--bg-panel);
+      border-radius: var(--radius-lg);
+      padding: 18px 18px 14px;
+      box-shadow: var(--shadow-main);
+      backdrop-filter: blur(16px);
     }
 
-    /* se till att grid alltid stretchar barnen */
-    .layout{
+    h1 {
+      margin: 0 0 4px;
+      font-size: 1.3rem;
+    }
+
+    .subtitle {
+      margin-bottom: 14px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 18px;
       justify-items: stretch;
       align-items: start;
     }
 
-    /* tvinga att båda sektionerna fyller kolumnen */
-    .layout > section{
+    .layout.iso-only {
+      grid-template-columns: 1fr;
+    }
+
+    .layout > section {
       width: 100%;
       min-width: 0;
     }
 
-    /* alla cards ska fylla bredden och ligga centrerat */
-    .diagram-card,
+    .mode-tabs {
+      display: flex;
+      width: 100%;
+      max-width: 100%;
+      margin-bottom: 12px;
+      padding: 3px;
+      gap: 0;
+      overflow-x: auto;
+      justify-content: center;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      background: var(--bg-input);
+    }
+
+    .tab-btn {
+      flex-shrink: 0;
+      border: 0;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      padding: 5px 10px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--green), var(--green-dark));
+      color: #fff;
+    }
+
+    .field {
+      margin-bottom: 9px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 0.8rem;
+      color: var(--text-soft);
+    }
+
+    .unit {
+      margin-left: 2px;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    input[type="number"],
+    textarea.iso-input {
+      width: 100%;
+      padding: 8px 9px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--bg-input);
+      color: var(--text-main);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    input[type="number"]:focus,
+    textarea.iso-input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
+    }
+
+    textarea.iso-input {
+      resize: vertical;
+    }
+
+    button.calc {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      margin-top: 6px;
+      padding: 9px 12px;
+      border: 0;
+      border-radius: var(--radius-xs);
+      background: linear-gradient(135deg, var(--green), var(--green-dark));
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.12s ease;
+    }
+
+    button.calc:hover {
+      filter: brightness(1.05);
+      box-shadow: 0 10px 25px rgba(22, 163, 74, 0.4);
+      transform: translateY(-1px);
+    }
+
+    button.calc:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
     .results,
     .howto,
-    .iso-steps{
+    .iso-steps,
+    .diagram-card {
       width: 100%;
       margin-inline: auto;
+    }
+
+    .results {
+      margin-top: 10px;
+      padding: 10px 11px;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-sm);
+      background: var(--bg-card);
+      font-size: 0.85rem;
+    }
+
+    .results-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      gap: 8px;
+    }
+
+    .results-row .label {
+      color: var(--text-muted);
+    }
+
+    .results-row .value {
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .note {
+      margin-top: 6px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .error {
+      display: none;
+      margin-top: 6px;
+      font-size: 0.78rem;
+      color: var(--text-error);
+    }
+
+    .diagram-card {
+      padding: 10px;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-md);
+      background: radial-gradient(circle at top left, #0f172a, #020617);
+    }
+
+    .diagram-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+      font-size: 0.8rem;
+      color: var(--text-soft);
+    }
+
+    .view-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .mini-btn,
+    .iso-btn,
+    .iso-secondary {
+      cursor: pointer;
+    }
+
+    .mini-btn {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(2, 6, 23, 0.35);
+      color: var(--text-main);
+      font-weight: 700;
+      font-size: 0.78rem;
+    }
+
+    .mini-btn:hover,
+    .iso-btn:hover,
+    .iso-secondary:hover {
+      border-color: var(--blue);
+    }
+
+    .badge {
+      white-space: nowrap;
+      padding: 2px 7px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 280px;
+    }
+
+    .axis {
+      stroke: var(--border);
+      stroke-width: 1;
+      stroke-dasharray: 3 3;
+    }
+
+    .leg {
+      fill: none;
+      stroke-width: 3;
+    }
+
+    .leg.horizontal {
+      stroke: var(--green);
+    }
+
+    .leg.vertical {
+      stroke: var(--blue);
+    }
+
+    .hyp {
+      fill: none;
+      stroke: var(--orange);
+      stroke-width: 3;
+    }
+
+    .point {
+      fill: var(--text-main);
+      stroke: #020617;
+      stroke-width: 1.2;
+    }
+
+    .dim-text {
+      font-size: 9px;
+      fill: var(--text-main);
+      paint-order: stroke;
+      stroke: #020617;
+      stroke-width: 1px;
+    }
+
+    .howto {
+      margin-top: 6px;
+      padding: 10px 11px;
+      border: 1px dashed rgba(148, 163, 184, 0.6);
+      border-radius: var(--radius-sm);
+      background: var(--bg-card);
+      font-size: 0.82rem;
+    }
+
+    .howto h3 {
+      margin: 0 0 6px;
+      font-size: 0.9rem;
+    }
+
+    .howto ol {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .howto li {
+      margin-bottom: 4px;
+    }
+
+    .iso-controls {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .iso-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .iso-btns {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .iso-btn {
+      padding: 10px 8px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      background: var(--bg-input);
+      color: var(--text-main);
+      font-weight: 700;
+    }
+
+    .iso-secondary {
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .iso-secondary:hover {
+      color: var(--text-main);
+    }
+
+    .iso-steps {
+      margin-top: 8px;
+      padding: 10px 11px;
+      border: 1px dashed var(--border-dashed);
+      border-radius: var(--radius-sm);
+      background: var(--bg-card);
+      font-size: 0.82rem;
+    }
+
+    .iso-steps-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+
+    .iso-chip {
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .iso-list {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .iso-list li {
+      margin: 3px 0;
+      color: var(--text-soft);
+    }
+
+    .offset-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .toggle-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .offset-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(2, 6, 23, 0.55);
+      user-select: none;
+    }
+
+    .offset-toggle input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--blue);
+    }
+
+    .offset-toggle span {
+      font-size: 0.85rem;
+      color: var(--text-main);
+      font-weight: 700;
+    }
+
+    .offset-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      align-items: end;
+    }
+
+    #isoCanvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 5 / 3;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-sm);
+      background: var(--bg-input);
+      touch-action: none;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .m0 {
+      margin: 0 !important;
+    }
+
+    .mb0 {
+      margin-bottom: 0 !important;
+    }
+
+    @media (max-width: 780px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      h1,
+      .subtitle {
+        text-align: center;
+      }
+
+      .diagram-header {
+        flex-wrap: wrap;
+        justify-content: center;
+        text-align: center;
+        gap: 10px;
+      }
+
+      .view-actions {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .offset-grid {
+        grid-template-columns: 1fr;
+      }
+
+      #isoCanvas {
+        aspect-ratio: 4 / 3;
+      }
+
+      .iso-canvas-card {
+        position: sticky;
+        top: 8px;
+        z-index: 20;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .mode-tabs {
+        justify-content: flex-start;
+        scroll-snap-type: x mandatory;
+      }
+
+      .tab-btn {
+        scroll-snap-align: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .app {
+        padding: 12px 12px 10px;
+      }
+
+      h1 {
+        font-size: 1.1rem;
+      }
+
+      .subtitle {
+        font-size: 0.8rem;
+        margin-bottom: 10px;
+      }
+
+      .results {
+        font-size: 0.8rem;
+      }
+
+      .note,
+      .howto {
+        font-size: 0.8rem;
+      }
     }
   </style>
 </head>
 <body>
-<main class="app">
-  <h1>Rörbockning med Farbror Niklas</h1>
-  <div class="subtitle">Beräkna rörlängd, vinkel och horisontell förskjutning från en referenspunkt.</div>
+  <main class="app">
+    <h1>Rörbockning med Farbror Niklas</h1>
+    <div class="subtitle">
+      Beräkna rörlängd, vinkel och horisontell förskjutning från en referenspunkt.
+    </div>
 
-  <div class="layout" id="layoutRoot">
-    <section>
-      <div class="mode-tabs">
-        <button class="tab-btn active" data-mode="heightAngle">90° kick</button>
-        <button class="tab-btn" data-mode="howto">Hur du använder detta</button>
-        <button class="tab-btn" data-mode="iso3d">3D ISO</button>
-      </div>
-
-      <div id="mode-heightAngle">
-        <div class="field">
-          <label for="height2">Höjd från referenslinje (offset) <span class="unit">(mm)</span></label>
-          <input id="height2" type="number" min="0" step="0.1" value="30" />
-        </div>
-        <div class="field">
-          <label for="angle2">Vinkel på bock <span class="unit">(° från horisontal)</span></label>
-          <input id="angle2" type="number" min="0" max="89.9" step="0.1" value="15" />
-        </div>
-        <button class="calc" id="calcHeightAngle">Beräkna <span aria-hidden="true">➜</span></button>
-        <div id="errorHeightAngle" class="error">Ange positiv höjd och vinkel mellan 0–89.9°.</div>
-
-        <div class="results">
-          <div class="results-row"><span class="label">Rörlängd (lutande segment L):</span><span class="value" id="lenOut2">–</span></div>
-          <div class="results-row"><span class="label">Horisontell projektion (fx):</span><span class="value" id="fxOut2">–</span></div>
-          <div class="note">Längd = höjd / sin(v)<br/>fx = längd · cos(v) = höjd / tan(v).</div>
-        </div>
-      </div>
-
-      <div id="mode-howto" class="hidden">
-        <div class="howto">
-          <h3>Hur du har kontroll på en 90°kick</h3>
-          <ol>
-            <li><strong>Välj 0-punkt, där 90° skal vara.</strong> Markera på röret var det ska hamna i slutläget.</li>
-            <li><strong>Skriv in höjd (offset) + vinkel.</strong> Appen räknar L och fx.</li>
-            <li><strong>Ta fx mått bakåt, där hamnar knäcken, från knäck ta måttet L där skal 90° bockas.</strong> Följ dina markeringar och bocka till vinkeln.</li>
-            <li>för ännu mer kontrol att centrum på radien hamnar exakt, så skal man ta hänsyn till båg längden på knäcken, samt en förskjutning på knäcken när man vill ha exakt samma CC mått när flera rör ligger i klammer, men de kommer vi till senare uppdatering</li>
-            <li><strong>3D ISO</strong> På denna flik, kan du i rita upp ditt rör. Här får du total längden på röret du ritar upp, samt om du gör en offset så räknar den ut och markerat ut L längden direkt efter den vinkel och offsett du skriver in. Lek lite med detta och kom med feedback, OBS! glöm inte att av bocka Offsett rutan när du skal göra 90°.</li>
-            <li><strong>PDF Export</strong> Detta skapar en pdf fil med utsatta mått på röret du ritat, detta är under utveckling och behövs finslipas</li>
-          </ol>
-        </div>
-      </div>
-
-      <div id="mode-iso3d" class="hidden">
-        <div class="diagram-card iso-canvas-card">
-          <div class="diagram-header">
-            <span>3D ISO-visning</span>
-            <div class="view-actions">
-              <button class="mini-btn" id="rotateViewBtn" title="Rotera vyn 90°">Rotera 90°</button>
-              <button class="mini-btn" id="resetViewBtn" title="Återställ zoom/pan">Återställ</button>
-              <button class="mini-btn" id="exportPdfBtn" title="Exportera som PDF (A4 liggande)">Exportera PDF</button>
-              <span class="badge">Zoom: scroll/pinch • Pan: dra</span>
-            </div>
-          </div>
-          <canvas id="isoCanvas" width="600" height="360" aria-label="3D ISO canvas"></canvas>
+    <div class="layout" id="layoutRoot">
+      <section>
+        <div class="mode-tabs">
+          <button class="tab-btn active" data-mode="heightAngle">90° kick</button>
+          <button class="tab-btn" data-mode="howto">Hur du använder detta</button>
+          <button class="tab-btn" data-mode="iso3d">3D ISO</button>
         </div>
 
-        <div class="iso-controls">
-          <div class="iso-row">
-            <div>
-              <label for="stepMm">Mått per steg <span class="unit">(mm)</span></label>
-              <input id="stepMm" type="number" min="0" step="0.1" value="100" />
-              <div class="note">Tryck en riktning för att lägga till ett rörsteg.</div>
-
-              <!-- ✅ Offset + Mått toggles -->
-              <div class="offset-row">
-                <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                  <label class="offset-toggle m0" for="offsetEnabled">
-                    <input id="offsetEnabled" type="checkbox" />
-                    <span>Offset</span>
-                  </label>
-
-                  <label class="offset-toggle m0" for="dimsEnabled" title="Visa/dölj mått på canvas">
-                    <input id="dimsEnabled" type="checkbox" checked />
-                    <span>Mått</span>
-                  </label>
-                </div>
-                <div class="note m0">Offset: vinkel + offset → hypotenusa.</div>
-              </div>
-            </div>
-
-            <button class="iso-secondary" id="undoStepBtn" title="Ta bort sista steget">Ångra</button>
-            <button class="iso-secondary" id="clearStepsBtn" title="Rensa alla steg">Rensa</button>
-          </div>
-
-          <div id="offsetPanel" class="hidden">
-            <div class="offset-grid">
-              <div class="field mb0">
-                <label for="offsetAngle">Vinkel <span class="unit">(°)</span></label>
-                <input id="offsetAngle" type="number" step="0.1" value="45" />
-                <div class="note">För E/N/S/W: + = upp, − = ner.</div>
-              </div>
-              <div class="field mb0">
-                <label for="offsetMm">Offset <span class="unit">(mm)</span></label>
-                <input id="offsetMm" type="number" min="0" step="0.1" value="100" />
-                <div class="note">Katet (förflyttning). Segment blir längre.</div>
-              </div>
-            </div>
-            <div id="errorOffset" class="error">Vinkel får inte vara 0° eller ±90°. Offset måste vara &gt; 0.</div>
-          </div>
-
-          <div class="iso-btns">
-            <button class="iso-btn" data-dir="E">E ➜</button>
-            <button class="iso-btn" data-dir="N">N ▲</button>
-            <button class="iso-btn" data-dir="UP">UP ⬆</button>
-            <button class="iso-btn" data-dir="W">W ◀</button>
-            <button class="iso-btn" data-dir="S">S ▼</button>
-            <button class="iso-btn" data-dir="DOWN">DOWN ⬇</button>
+        <div id="mode-heightAngle">
+          <div class="field">
+            <label for="height2">
+              Höjd från referenslinje (offset)
+              <span class="unit">(mm)</span>
+            </label>
+            <input id="height2" type="number" min="0" step="0.1" value="30" />
           </div>
 
           <div class="field">
-            <label for="points3d">Steg-lista (du kan även skriva här manuellt)</label>
-            <textarea id="points3d" class="iso-input" rows="7">E 120
-N 40
-UP 30</textarea>
-            <div class="note">
-              Format per rad:<br/>
-              • <strong>E/W/N/S/UP/DOWN</strong> + mm (ex <code>E 120</code>)<br/>
-              • Offsetsteg: <strong>O</strong> + dir + vinkel + offset (ex <code>O E 45 100</code>)
-            </div>
+            <label for="angle2">
+              Vinkel på bock
+              <span class="unit">(° från horisontal)</span>
+            </label>
+            <input id="angle2" type="number" min="0" max="89.9" step="0.1" value="15" />
           </div>
 
-          <div class="iso-steps">
-            <div class="iso-steps-header">
-              <strong>Steg</strong><span class="iso-chip" id="stepCountChip">0 steg</span>
-            </div>
-            <ol class="iso-list" id="stepsList"></ol>
-          </div>
+          <button class="calc" id="calcHeightAngle">
+            Beräkna <span aria-hidden="true">➜</span>
+          </button>
 
-          <div id="errorIso" class="error">Kunde inte läsa stegen. Ex: <strong>E 120</strong> eller <strong>O E 45 100</strong>.</div>
+          <div id="errorHeightAngle" class="error">
+            Ange positiv höjd och vinkel mellan 0–89.9°.
+          </div>
 
           <div class="results">
-            <div class="results-row"><span class="label">Antal punkter:</span><span class="value" id="isoCount">–</span></div>
-            <div class="results-row"><span class="label">Total längd (3D):</span><span class="value" id="isoLen">–</span></div>
+            <div class="results-row">
+              <span class="label">Rörlängd (lutande segment L):</span>
+              <span class="value" id="lenOut2">–</span>
+            </div>
+            <div class="results-row">
+              <span class="label">Horisontell projektion (fx):</span>
+              <span class="value" id="fxOut2">–</span>
+            </div>
+            <div class="note">
+              Längd = höjd / sin(v)<br />
+              fx = längd · cos(v) = höjd / tan(v).
+            </div>
           </div>
         </div>
-      </div>
-    </section>
 
-    <section class="diagram-card" id="illustrationPanel">
-      <div class="diagram-header">
-        <span>Illustration</span><span class="badge">0-punkt = skärning streckad/grön</span>
-      </div>
-      <svg viewBox="0 0 220 220" aria-hidden="true">
-        <line class="axis" x1="20" y1="200" x2="20" y2="20" />
-        <line id="baseLeg" class="leg horizontal" x1="20" y1="200" x2="200" y2="200" />
-        <line id="riseLeg" class="leg vertical" x1="20" y1="200" x2="20" y2="80" />
-        <line id="projLine" class="axis" x1="180" y1="200" x2="180" y2="80" />
-        <line id="hypLeg" class="hyp" x1="20" y1="200" x2="180" y2="80" />
-        <circle id="zeroPoint" class="point" cx="180" cy="200" r="3" />
-        <circle id="endPoint" class="point" cx="180" cy="80" r="3" />
-        <text id="labelZero" class="dim-text" x="184" y="195">0</text>
-        <text id="labelFx" class="dim-text" x="100" y="210">fx</text>
-        <text id="labelHeight" class="dim-text" x="5" y="130">h</text>
-        <text id="labelHyp" class="dim-text" x="120" y="120">L</text>
-        <text id="labelAngle" class="dim-text" x="40" y="190">v</text>
-      </svg>
-      <div class="note">
-        Grönt = rakt rör, blått = offset, orange = lutande rördel L.
-        0-punkten är där proj-linjen möter det raka röret.
-      </div>
-    </section>
-  </div>
-</main>
+        <div id="mode-howto" class="hidden">
+          <div class="howto">
+            <h3>Hur du har kontroll på en 90° kick</h3>
+            <ol>
+              <li>
+                <strong>Välj 0-punkt där 90° ska vara.</strong>
+                Markera på röret var det ska hamna i slutläget.
+              </li>
+              <li>
+                <strong>Skriv in höjd (offset) och vinkel.</strong>
+                Appen räknar ut L och fx.
+              </li>
+              <li>
+                <strong>Ta fx-måttet bakåt.</strong>
+                Där hamnar knäcken. Från knäcken tar du måttet L där 90° ska bockas.
+              </li>
+              <li>
+                För ännu bättre kontroll, så att centrum på radien hamnar exakt, behöver man även ta hänsyn till båglängden i knäcken samt en förskjutning när man vill få exakt samma CC-mått när flera rör ligger i klammer. Det kommer i en senare uppdatering.
+              </li>
+              <li>
+                <strong>3D ISO</strong>
+                På denna flik kan du rita upp ditt rör. Här får du total längd på röret du ritar upp, och om du gör en offset räknar appen ut och markerar L-längden direkt efter den vinkel och offset du skriver in. Testa gärna och kom med feedback. Glöm inte att avmarkera offset-rutan när du ska göra 90°.
+              </li>
+              <li>
+                <strong>PDF-export</strong>
+                Detta skapar en PDF-fil med utsatta mått på röret du ritat. Funktionen är under utveckling och behöver finslipas.
+              </li>
+            </ol>
+          </div>
+        </div>
 
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-<script>
-  // --- helpers ---
-  const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
-  const on=(el,ev,fn,opt)=>el&&el.addEventListener(ev,fn,opt);
-  const show=(el,yes)=>el&&el.classList.toggle("hidden",!yes);
-  const readNum=el=>parseFloat(String(el.value).replace(",","."));
-  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+        <div id="mode-iso3d" class="hidden">
+          <div class="diagram-card iso-canvas-card">
+            <div class="diagram-header">
+              <span>3D ISO-visning</span>
+              <div class="view-actions">
+                <button class="mini-btn" id="rotateViewBtn" title="Rotera vyn 90°">
+                  Rotera 90°
+                </button>
+                <button class="mini-btn" id="resetViewBtn" title="Återställ zoom/pan">
+                  Återställ
+                </button>
+                <button class="mini-btn" id="exportPdfBtn" title="Exportera som PDF (A4 liggande)">
+                  Exportera PDF
+                </button>
+                <span class="badge">Zoom: scroll/pinch • Pan: dra</span>
+              </div>
+            </div>
 
-  // prevent iOS gesture zoom
-  ["gesturestart","gesturechange","gestureend"].forEach(ev=>on(document,ev,e=>e.preventDefault(),{passive:false}));
-  let __lastTouchEnd=0;
-  on(document,"touchend",e=>{const now=Date.now();if(now-__lastTouchEnd<=300)e.preventDefault();__lastTouchEnd=now;},{passive:false});
+            <canvas
+              id="isoCanvas"
+              width="600"
+              height="360"
+              aria-label="3D ISO canvas"
+            ></canvas>
+          </div>
 
-  // --- mode switching ---
-  const modeButtons=$$(".tab-btn");
-  const modeHeightAngleEl=$("#mode-heightAngle"), modeHowtoEl=$("#mode-howto"), modeIso3dEl=$("#mode-iso3d");
-  const illustrationPanel=$("#illustrationPanel"), layoutRoot=$("#layoutRoot");
+          <div class="iso-controls">
+            <div class="iso-row">
+              <div>
+                <label for="stepMm">
+                  Mått per steg <span class="unit">(mm)</span>
+                </label>
+                <input id="stepMm" type="number" min="0" step="0.1" value="100" />
+                <div class="note">Tryck en riktning för att lägga till ett rörsteg.</div>
 
-  function showMode(mode){
-    show(modeHeightAngleEl,mode==="heightAngle");
-    show(modeHowtoEl,mode==="howto");
-    show(modeIso3dEl,mode==="iso3d");
+                <div class="offset-row">
+                  <div class="toggle-group">
+                    <label class="offset-toggle m0" for="offsetEnabled">
+                      <input id="offsetEnabled" type="checkbox" />
+                      <span>Offset</span>
+                    </label>
 
-    const isoActive=mode==="iso3d";
-    show(illustrationPanel,!isoActive);
-    layoutRoot.classList.toggle("iso-only",isoActive);
+                    <label
+                      class="offset-toggle m0"
+                      for="dimsEnabled"
+                      title="Visa/dölj mått på canvas"
+                    >
+                      <input id="dimsEnabled" type="checkbox" checked />
+                      <span>Mått</span>
+                    </label>
+                  </div>
 
-    if(mode==="heightAngle") calculateHeightAngle();
-    if(mode==="iso3d"){ syncStepsFromTextarea(); fitView(false); drawIso(); }
-  }
+                  <div class="note m0">Offset: vinkel + offset → hypotenusa.</div>
+                </div>
+              </div>
 
-  modeButtons.forEach(btn=>on(btn,"click",()=>{
-    modeButtons.forEach(b=>b.classList.remove("active"));
-    btn.classList.add("active");
-    showMode(btn.dataset.mode);
-  }));
+              <button
+                class="iso-secondary"
+                id="undoStepBtn"
+                title="Ta bort sista steget"
+              >
+                Ångra
+              </button>
 
-  // --- height+angle ---
-  const height2Input=$("#height2"), angle2Input=$("#angle2"), lenOut2=$("#lenOut2"), fxOut2=$("#fxOut2");
-  const errorHeightAngle=$("#errorHeightAngle"), calcHeightAngleBtn=$("#calcHeightAngle");
+              <button
+                class="iso-secondary"
+                id="clearStepsBtn"
+                title="Rensa alla steg"
+              >
+                Rensa
+              </button>
+            </div>
 
-  const baseLeg=$("#baseLeg"), riseLeg=$("#riseLeg"), hypLeg=$("#hypLeg"), endPoint=$("#endPoint"), projLine=$("#projLine");
-  const zeroPoint=$("#zeroPoint"), labelZero=$("#labelZero"), labelFx=$("#labelFx"), labelHeight=$("#labelHeight"), labelHyp=$("#labelHyp"), labelAngle=$("#labelAngle");
+            <div id="offsetPanel" class="hidden">
+              <div class="offset-grid">
+                <div class="field mb0">
+                  <label for="offsetAngle">
+                    Vinkel <span class="unit">(°)</span>
+                  </label>
+                  <input id="offsetAngle" type="number" step="0.1" value="45" />
+                  <div class="note">För E/N/S/W: + = upp, − = ner.</div>
+                </div>
 
-  function updateDiagram(x,y,length,angleDeg){
-    const padding=24,size=220,width=size-padding*2,height=size-padding*2;
-    const X=Math.max(x,1e-6),Y=Math.max(y,1e-6),reservedRightPx=30,widthForTriangle=width-reservedRightPx;
-    const scale=Math.min(widthForTriangle/X,height/Y);
-    const originX=padding, originY=size-padding;
-    const xFoot=originX+X*scale, yFoot=originY, xTop=xFoot, yTop=originY-Y*scale;
-    const baseEndX=Math.min(xFoot+reservedRightPx,size-padding);
+                <div class="field mb0">
+                  <label for="offsetMm">
+                    Offset <span class="unit">(mm)</span>
+                  </label>
+                  <input id="offsetMm" type="number" min="0" step="0.1" value="100" />
+                  <div class="note">Katet (förflyttning). Segment blir längre.</div>
+                </div>
+              </div>
 
-    baseLeg.setAttribute("x1",originX); baseLeg.setAttribute("y1",originY); baseLeg.setAttribute("x2",baseEndX); baseLeg.setAttribute("y2",originY);
-    riseLeg.setAttribute("x1",originX); riseLeg.setAttribute("y1",originY); riseLeg.setAttribute("x2",originX); riseLeg.setAttribute("y2",yTop);
-    hypLeg.setAttribute("x1",originX);  hypLeg.setAttribute("y1",originY);  hypLeg.setAttribute("x2",xTop);    hypLeg.setAttribute("y2",yTop);
+              <div id="errorOffset" class="error">
+                Vinkel får inte vara 0° eller ±90°. Offset måste vara &gt; 0.
+              </div>
+            </div>
 
-    endPoint.setAttribute("cx",xTop); endPoint.setAttribute("cy",yTop);
-    projLine.setAttribute("x1",xTop); projLine.setAttribute("y1",originY+10); projLine.setAttribute("x2",xTop); projLine.setAttribute("y2",20);
+            <div class="iso-btns">
+              <button class="iso-btn" data-dir="E">E ➜</button>
+              <button class="iso-btn" data-dir="N">N ▲</button>
+              <button class="iso-btn" data-dir="UP">UP ⬆</button>
+              <button class="iso-btn" data-dir="W">W ◀</button>
+              <button class="iso-btn" data-dir="S">S ▼</button>
+              <button class="iso-btn" data-dir="DOWN">DOWN ⬇</button>
+            </div>
 
-    zeroPoint.setAttribute("cx",xFoot); zeroPoint.setAttribute("cy",yFoot);
-    labelZero.setAttribute("x",xFoot+4); labelZero.setAttribute("y",originY-5); labelZero.textContent="0";
+            <div class="field">
+              <label for="points3d">Steg-lista (du kan även skriva här manuellt)</label>
+              <textarea id="points3d" class="iso-input" rows="7">E 120
+N 40
+UP 30</textarea>
+              <div class="note">
+                Format per rad:<br />
+                • <strong>E/W/N/S/UP/DOWN</strong> + mm (ex <code>E 120</code>)<br />
+                • Offsetsteg: <strong>O</strong> + dir + vinkel + offset
+                (ex <code>O E 45 100</code>)
+              </div>
+            </div>
 
-    const fxText=`fx ≈ ${x.toFixed(1)} mm`, hText=`h ≈ ${y.toFixed(1)} mm`;
-    const lenText=length?`L ≈ ${length.toFixed(1)} mm`:"L";
-    const angText=isFinite(angleDeg)?`v ≈ ${angleDeg.toFixed(1)}°`:"v";
+            <div class="iso-steps">
+              <div class="iso-steps-header">
+                <strong>Steg</strong>
+                <span class="iso-chip" id="stepCountChip">0 steg</span>
+              </div>
+              <ol class="iso-list" id="stepsList"></ol>
+            </div>
 
-    labelFx.setAttribute("x",(originX+xFoot)/2); labelFx.setAttribute("y",originY+12); labelFx.textContent=fxText;
-    labelHeight.setAttribute("x",originX-4); labelHeight.setAttribute("y",(originY+yTop)/2); labelHeight.textContent=hText;
-    labelHyp.setAttribute("x",(originX+xTop)/2); labelHyp.setAttribute("y",(originY+yTop)/2-4); labelHyp.textContent=lenText;
-    labelAngle.setAttribute("x",originX+20); labelAngle.setAttribute("y",originY-8); labelAngle.textContent=angText;
-  }
+            <div id="errorIso" class="error">
+              Kunde inte läsa stegen. Ex: <strong>E 120</strong> eller
+              <strong>O E 45 100</strong>.
+            </div>
 
-  function calculateHeightAngle(){
-    const height=readNum(height2Input), angleDeg=readNum(angle2Input);
-    if(!isFinite(height)||!isFinite(angleDeg)||height<=0||angleDeg<=0||angleDeg>=90){
-      show(errorHeightAngle,true); lenOut2.textContent="–"; fxOut2.textContent="–";
-      updateDiagram(1,1,Math.SQRT2,45); return;
+            <div class="results">
+              <div class="results-row">
+                <span class="label">Antal punkter:</span>
+                <span class="value" id="isoCount">–</span>
+              </div>
+              <div class="results-row">
+                <span class="label">Total längd (3D):</span>
+                <span class="value" id="isoLen">–</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="diagram-card" id="illustrationPanel">
+        <div class="diagram-header">
+          <span>Illustration</span>
+          <span class="badge">0-punkt = skärning streckad/grön</span>
+        </div>
+
+        <svg viewBox="0 0 220 220" aria-hidden="true">
+          <line class="axis" x1="20" y1="200" x2="20" y2="20" />
+          <line
+            id="baseLeg"
+            class="leg horizontal"
+            x1="20"
+            y1="200"
+            x2="200"
+            y2="200"
+          />
+          <line
+            id="riseLeg"
+            class="leg vertical"
+            x1="20"
+            y1="200"
+            x2="20"
+            y2="80"
+          />
+          <line id="projLine" class="axis" x1="180" y1="200" x2="180" y2="80" />
+          <line id="hypLeg" class="hyp" x1="20" y1="200" x2="180" y2="80" />
+          <circle id="zeroPoint" class="point" cx="180" cy="200" r="3" />
+          <circle id="endPoint" class="point" cx="180" cy="80" r="3" />
+          <text id="labelZero" class="dim-text" x="184" y="195">0</text>
+          <text id="labelFx" class="dim-text" x="100" y="210">fx</text>
+          <text id="labelHeight" class="dim-text" x="5" y="130">h</text>
+          <text id="labelHyp" class="dim-text" x="120" y="120">L</text>
+          <text id="labelAngle" class="dim-text" x="40" y="190">v</text>
+        </svg>
+
+        <div class="note">
+          Grönt = rakt rör, blått = offset, orange = lutande rördel L.
+          0-punkten är där proj-linjen möter det raka röret.
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <script>
+    // ------------------------------------------------------------
+    // Helpers
+    // ------------------------------------------------------------
+    const $ = (selector, root = document) => root.querySelector(selector);
+    const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+
+    function on(el, eventName, handler, options) {
+      if (el) el.addEventListener(eventName, handler, options);
     }
-    show(errorHeightAngle,false);
-    const angleRad=angleDeg*Math.PI/180, length=height/Math.sin(angleRad), fx=length*Math.cos(angleRad);
-    lenOut2.textContent=length.toFixed(3)+" mm"; fxOut2.textContent=fx.toFixed(3)+" mm";
-    updateDiagram(fx,height,length,angleDeg);
-  }
 
-  on(calcHeightAngleBtn,"click",e=>{e.preventDefault();calculateHeightAngle();});
-  on(height2Input,"input",calculateHeightAngle);
-  on(angle2Input,"input",calculateHeightAngle);
-
-  // --- ISO 3D ---
-  const stepMmInput=$("#stepMm"), stepBtns=$$(".iso-btn"), undoStepBtn=$("#undoStepBtn"), clearStepsBtn=$("#clearStepsBtn");
-  const stepsListEl=$("#stepsList"), stepCountChip=$("#stepCountChip");
-  const points3dInput=$("#points3d"), errorIso=$("#errorIso"), isoCountOut=$("#isoCount"), isoLenOut=$("#isoLen");
-  const isoCanvas=$("#isoCanvas"), ctxIso=isoCanvas?isoCanvas.getContext("2d"):null;
-  const rotateViewBtn=$("#rotateViewBtn"), resetViewBtn=$("#resetViewBtn"), exportPdfBtn=$("#exportPdfBtn");
-  const offsetEnabled=$("#offsetEnabled"), offsetPanel=$("#offsetPanel"), offsetAngleInput=$("#offsetAngle"), offsetMmInput=$("#offsetMm"), errorOffset=$("#errorOffset");
-
-  // ✅ NEW: toggle for dimensions on canvas
-  const dimsEnabled=$("#dimsEnabled");
-  let showDims = true;
-
-  const COS30=Math.cos(Math.PI/6), SIN30=Math.sin(Math.PI/6);
-  const dirMap={E:{dx:1,dy:0,dz:0},W:{dx:-1,dy:0,dz:0},N:{dx:0,dy:1,dz:0},S:{dx:0,dy:-1,dz:0},UP:{dx:0,dy:0,dz:1},DOWN:{dx:0,dy:0,dz:-1}};
-  let isoSteps=[];
-
-  // ✅ IMPORTANT: rot must be 0..3 (90° steps). You had -45 which is wrong for this system.
-  // Start orientation example: 3 = 270° (same as -1 mod 4).
-  const view={baseScale:1,baseCx:0,baseCy:0,zoom:1,panX:0,panY:0,rot:3};
-  const degToRad=d=>d*Math.PI/180;
-
-  // init dimension toggle state
-  if(dimsEnabled){
-    showDims = !!dimsEnabled.checked;
-    on(dimsEnabled,"change",()=>{
-      showDims = !!dimsEnabled.checked;
-      drawIso();
-    });
-  }
-
-  function ensureCanvasDpr(){
-    if(!isoCanvas||!ctxIso) return {w:0,h:0,dpr:1};
-    const rect=isoCanvas.getBoundingClientRect();
-    const cssW=Math.max(1,Math.round(rect.width)), cssH=Math.max(1,Math.round(rect.height));
-    const dpr=Math.max(1,window.devicePixelRatio||1);
-    const targetW=Math.round(cssW*dpr), targetH=Math.round(cssH*dpr);
-    if(isoCanvas.width!==targetW||isoCanvas.height!==targetH){isoCanvas.width=targetW; isoCanvas.height=targetH;}
-    ctxIso.setTransform(dpr,0,0,dpr,0,0);
-    return {w:cssW,h:cssH,dpr};
-  }
-
-  function rotateZ90(p,rotSteps){
-    const r=((rotSteps%4)+4)%4;
-    if(r===0) return {x:p.x,y:p.y,z:p.z};
-    if(r===1) return {x:p.y,y:-p.x,z:p.z};
-    if(r===2) return {x:-p.x,y:-p.y,z:p.z};
-    return {x:-p.y,y:p.x,z:p.z};
-  }
-
-  const projectIsoRaw=p=>({x:(p.x-p.y)*COS30,y:(p.x+p.y)*SIN30-p.z});
-  const projectIso=p3d=>projectIsoRaw(rotateZ90(p3d,view.rot));
-
-  function polylineLength3d(pts){
-    let sum=0;
-    for(let i=1;i<pts.length;i++){
-      const dx=pts[i].x-pts[i-1].x, dy=pts[i].y-pts[i-1].y, dz=pts[i].z-pts[i-1].z;
-      sum+=Math.sqrt(dx*dx+dy*dy+dz*dz);
+    function show(el, visible) {
+      if (!el) return;
+      el.classList.toggle("hidden", !visible);
     }
-    return sum;
-  }
 
-  function roundRectPath(ctx,x,y,w,h,r){
-    if(ctx.roundRect){ctx.beginPath();ctx.roundRect(x,y,w,h,r);return;}
-    const rr=Math.min(r,w/2,h/2);
-    ctx.beginPath(); ctx.moveTo(x+rr,y);
-    ctx.arcTo(x+w,y,x+w,y+h,rr);
-    ctx.arcTo(x+w,y+h,x,y+h,rr);
-    ctx.arcTo(x,y+h,x,y,rr);
-    ctx.arcTo(x,y,x+w,y,rr);
-    ctx.closePath();
-  }
-
-  // --- offset step stores decomposition so we can dimension "off" leg ---
-  function buildOffsetStep(dir,angDeg,offMm){
-    const a=Math.abs(angDeg); if(!(a>0&&a<90)) return null;
-    const ar=degToRad(a), sinA=Math.sin(ar), tanA=Math.tan(ar);
-    if(sinA===0||tanA===0) return null;
-
-    const L=offMm/sinA;
-    const P=offMm/tanA;
-    const s=(angDeg>=0)?1:-1;
-
-    let proj={dx:0,dy:0,dz:0};
-    let offv={dx:0,dy:0,dz:0};
-
-    if(dir==="E"||dir==="W"||dir==="N"||dir==="S"){
-      const v=dirMap[dir];
-      proj = {dx:v.dx*P, dy:v.dy*P, dz:0};
-      offv = {dx:0, dy:0, dz:s*offMm};
-    }else if(dir==="UP"||dir==="DOWN"){
-      const v=dirMap[dir];
-      proj = {dx:0, dy:0, dz:v.dz*P};
-      offv = {dx:s*offMm, dy:0, dz:0};
-    }else return null;
-
-    const dx=proj.dx+offv.dx, dy=proj.dy+offv.dy, dz=proj.dz+offv.dz;
-    return {type:"OFF",dir,ang:angDeg,off:offMm,mm:L,P,proj,offv,dx,dy,dz};
-  }
-
-  function parseSteps(text){
-    const lines=text.split("\n").map(l=>l.trim()).filter(Boolean), out=[];
-    for(const line of lines){
-      const cleaned=line.replace(/\s+/g," ").toUpperCase();
-      let m=cleaned.match(/^O\s+([A-Z]+)\s+([+-]?\d+(?:[.,]\d+)?)\s+([+-]?\d+(?:[.,]\d+)?)$/);
-      if(m){
-        const dir=m[1], ang=parseFloat(m[2].replace(",", ".")), off=parseFloat(m[3].replace(",", "."));
-        if(!dirMap[dir]||!isFinite(ang)||!isFinite(off)||off<=0) return null;
-        const a=Math.abs(ang); if(!(a>0&&a<90)) return null;
-        const step=buildOffsetStep(dir,ang,off); if(!step) return null;
-        out.push(step); continue;
-      }
-      m=cleaned.match(/^([A-Z]+)\s*([+-]?\d+(?:[.,]\d+)?)$/); if(!m) return null;
-      const dir=m[1], mm=parseFloat(m[2].replace(",", "."));
-      if(!dirMap[dir]||!isFinite(mm)||mm<=0) return null;
-      out.push({type:"CARD",dir,mm});
+    function readNumber(el) {
+      if (!el) return NaN;
+      return Number.parseFloat(String(el.value).replace(",", ".").trim());
     }
-    return out;
-  }
 
-  function stepsToPoints(steps){
-    let x=0,y=0,z=0; const pts=[{x,y,z}];
-    for(const s of steps){
-      if(s.type==="CARD"){
-        const v=dirMap[s.dir]; x+=v.dx*s.mm; y+=v.dy*s.mm; z+=v.dz*s.mm;
-      }else{
-        x+=s.dx; y+=s.dy; z+=s.dz;
-      }
-      pts.push({x,y,z});
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
     }
-    return pts;
-  }
 
-  function stepsToPointsWithCorners(steps){
-    let x=0,y=0,z=0;
-    const verts=[{x,y,z}];
-    const corners=new Array(steps.length).fill(null);
-    for(let i=0;i<steps.length;i++){
-      const s=steps[i];
-      const start={x,y,z};
-      if(s.type==="CARD"){
-        const v=dirMap[s.dir]; x+=v.dx*s.mm; y+=v.dy*s.mm; z+=v.dz*s.mm;
-        const end={x,y,z};
-        verts.push(end);
-      }else{
-        const corner={x:x+s.proj.dx, y:y+s.proj.dy, z:z+s.proj.dz};
-        x+=s.dx; y+=s.dy; z+=s.dz;
-        const end={x,y,z};
-        corners[i]={start,corner,end,step:s};
-        verts.push(end);
-      }
+    function sameAxisDir(a, b) {
+      return String(a || "").toUpperCase() === String(b || "").toUpperCase();
     }
-    return {verts,corners};
-  }
 
-  function renderStepsList(){
-    stepsListEl.innerHTML="";
-    stepCountChip.textContent=`${isoSteps.length} steg`;
-    isoSteps.forEach((s,i)=>{
-      const li=document.createElement("li");
-      li.textContent=(s.type==="CARD")
-        ? `${i+1}. ${s.dir} ${s.mm} mm`
-        : `${i+1}. OFFSET ${s.dir} v:${s.ang}° off:${s.off}mm → L:${s.mm.toFixed(1)}mm`;
-      stepsListEl.appendChild(li);
-    });
-  }
-
-  function syncTextareaFromSteps(){
-    points3dInput.value=isoSteps.map(s=>s.type==="CARD"?`${s.dir} ${s.mm}`:`O ${s.dir} ${s.ang} ${s.off}`).join("\n");
-  }
-
-  function syncStepsFromTextarea(){
-    const parsed=parseSteps(points3dInput.value);
-    if(!parsed) return;
-    isoSteps=parsed; renderStepsList();
-  }
-
-  function fitView(keepUserZoom=false){
-    const parsed=parseSteps(points3dInput.value);
-    if(!parsed||parsed.length<1) return;
-    const {w,h}=ensureCanvasDpr();
-    const pts=stepsToPoints(parsed), proj=pts.map(projectIso);
-    let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
-    for(const p of proj){minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y);}
-    const spanX=Math.max(maxX-minX,1e-6), spanY=Math.max(maxY-minY,1e-6);
-    const pad=36, s=Math.min((w-2*pad)/spanX,(h-2*pad)/spanY);
-    const midX=(minX+maxX)/2, midY=(minY+maxY)/2;
-    view.baseScale=s; view.baseCx=w/2-midX*s; view.baseCy=h/2-midY*s;
-    if(!keepUserZoom){view.zoom=1;view.panX=0;view.panY=0;}
-  }
-
-  function resetView(){ fitView(false); drawIso(); }
-  on(resetViewBtn,"click",resetView);
-
-  // your button: rotate clockwise (decrement). rotateZ90 normalizes negative values safely.
-  on(rotateViewBtn,"click",()=>{view.rot=(view.rot-1);fitView(true);drawIso();});
-
-  function drawMiniAxes(){
-    if(!ctxIso) return;
-    const {w,h}=ensureCanvasDpr();
-    const s=Math.min(1,Math.max(.72,Math.min(w/420,h/280)));
-    const x=10,y=10,boxW=92*s,boxH=66*s,pad=10*s,axisLen=80;
-
-    const O=projectIso({x:0,y:0,z:0}), E=projectIso({x:axisLen,y:0,z:0}), N=projectIso({x:0,y:axisLen,z:0}), U=projectIso({x:0,y:0,z:axisLen});
-    const pts=[O,E,N,U];
-    let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
-    for(const p of pts){minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y);}
-    const spanX=Math.max(maxX-minX,1e-6), spanY=Math.max(maxY-minY,1e-6);
-    const k=Math.min((boxW-2*pad)/spanX,(boxH-2*pad)/spanY);
-    const midX=(minX+maxX)/2, midY=(minY+maxY)/2, cx=x+boxW/2, cy=y+boxH/2;
-    const toHud=p=>({x:cx+(p.x-midX)*k,y:cy+(p.y-midY)*k});
-    const cO=toHud(O), cE=toHud(E), cN=toHud(N), cU=toHud(U);
-
-    ctxIso.save();
-    ctxIso.fillStyle="rgba(2,6,23,.88)"; ctxIso.strokeStyle="rgba(148,163,184,.18)"; ctxIso.lineWidth=1;
-    roundRectPath(ctxIso,x,y,boxW,boxH,10*s); ctxIso.fill(); ctxIso.stroke();
-
-    ctxIso.lineCap="round"; ctxIso.lineJoin="round"; ctxIso.lineWidth=2.2*s;
-
-    ctxIso.strokeStyle="#38bdf8"; ctxIso.beginPath(); ctxIso.moveTo(cO.x,cO.y); ctxIso.lineTo(cE.x,cE.y); ctxIso.stroke();
-    ctxIso.strokeStyle="#22c55e"; ctxIso.beginPath(); ctxIso.moveTo(cO.x,cO.y); ctxIso.lineTo(cN.x,cN.y); ctxIso.stroke();
-    ctxIso.strokeStyle="#f97316"; ctxIso.beginPath(); ctxIso.moveTo(cO.x,cO.y); ctxIso.lineTo(cU.x,cU.y); ctxIso.stroke();
-
-    ctxIso.font=`${10*s}px system-ui`; ctxIso.textBaseline="middle"; ctxIso.textAlign="left";
-
-    function label(text,tx,ty){
-      const padX=4*s,padY=2*s,tw=ctxIso.measureText(text).width,bw=tw+padX*2,bh=14*s;
-      ctxIso.fillStyle="rgba(2,6,23,.90)"; ctxIso.strokeStyle="rgba(148,163,184,.16)"; ctxIso.lineWidth=1;
-      roundRectPath(ctxIso,tx-padX,ty-bh/2,bw,bh,6*s); ctxIso.fill(); ctxIso.stroke();
-      ctxIso.fillStyle="#e5e7eb"; ctxIso.fillText(text,tx,ty);
+    function degToRad(deg) {
+      return deg * Math.PI / 180;
     }
-    label("UP",cU.x+6*s,cU.y);
-    label("E", cE.x+6*s,cE.y);
-    label("N", cN.x-16*s,cN.y);
 
-    ctxIso.restore();
-  }
+    // ------------------------------------------------------------
+    // DOM refs
+    // ------------------------------------------------------------
+    const dom = {
+      layoutRoot: $("#layoutRoot"),
+      illustrationPanel: $("#illustrationPanel"),
 
-  // --- Label box on canvas (supports multi-line) ---
+      modeHeightAngle: $("#mode-heightAngle"),
+      modeHowto: $("#mode-howto"),
+      modeIso3d: $("#mode-iso3d"),
+      modeButtons: $$(".tab-btn"),
 
-  // --- CAD-like dimension on canvas (lines align + dots + text follows dim line, no box) ---
-  function drawCanvasDimCAD(ctx, a, b, text, outwardSign, opts={}){
-    const dx=b.x-a.x, dy=b.y-a.y;
-    const segL=Math.hypot(dx,dy);
-    if(segL < 1e-6) return;
+      height2Input: $("#height2"),
+      angle2Input: $("#angle2"),
+      calcHeightAngleBtn: $("#calcHeightAngle"),
+      errorHeightAngle: $("#errorHeightAngle"),
+      lenOut2: $("#lenOut2"),
+      fxOut2: $("#fxOut2"),
 
-    const ux=dx/segL, uy=dy/segL;
-    const nx=-uy, ny=ux;
+      baseLeg: $("#baseLeg"),
+      riseLeg: $("#riseLeg"),
+      hypLeg: $("#hypLeg"),
+      endPoint: $("#endPoint"),
+      projLine: $("#projLine"),
+      zeroPoint: $("#zeroPoint"),
+      labelZero: $("#labelZero"),
+      labelFx: $("#labelFx"),
+      labelHeight: $("#labelHeight"),
+      labelHyp: $("#labelHyp"),
+      labelAngle: $("#labelAngle"),
 
-    const off = opts.offPx ?? 10;
-    const ex=nx*off*outwardSign, ey=ny*off*outwardSign;
+      stepMmInput: $("#stepMm"),
+      stepButtons: $$(".iso-btn"),
+      undoStepBtn: $("#undoStepBtn"),
+      clearStepsBtn: $("#clearStepsBtn"),
+      stepsListEl: $("#stepsList"),
+      stepCountChip: $("#stepCountChip"),
+      points3dInput: $("#points3d"),
+      errorIso: $("#errorIso"),
+      isoCountOut: $("#isoCount"),
+      isoLenOut: $("#isoLen"),
 
-    const minLen = opts.minLenPx ?? 26;
-    const need = Math.max(0, minLen - segL);
+      isoCanvas: $("#isoCanvas"),
+      rotateViewBtn: $("#rotateViewBtn"),
+      resetViewBtn: $("#resetViewBtn"),
+      exportPdfBtn: $("#exportPdfBtn"),
 
-    const aDim={x:a.x+ex - ux*(need/2), y:a.y+ey - uy*(need/2)};
-    const bDim={x:b.x+ex + ux*(need/2), y:b.y+ey + uy*(need/2)};
+      offsetEnabled: $("#offsetEnabled"),
+      offsetPanel: $("#offsetPanel"),
+      offsetAngleInput: $("#offsetAngle"),
+      offsetMmInput: $("#offsetMm"),
+      errorOffset: $("#errorOffset"),
 
-    const ang=Math.atan2(bDim.y-aDim.y, bDim.x-aDim.x);
-
-    ctx.save();
-    ctx.lineCap="round";
-    ctx.lineJoin="round";
-
-    ctx.font=opts.font ?? "12px system-ui";
-    const tw=ctx.measureText(text).width;
-    const gap=tw/2 + (opts.gapPad ?? 5);
-
-    const mx=(aDim.x+bDim.x)/2, my=(aDim.y+bDim.y)/2;
-    const gx1={x:mx-Math.cos(ang)*gap, y:my-Math.sin(ang)*gap};
-    const gx2={x:mx+Math.cos(ang)*gap, y:my+Math.sin(ang)*gap};
-
-    // extension lines
-    ctx.strokeStyle=opts.extColor ?? "rgba(248,250,252,.65)";
-    ctx.lineWidth=opts.extW ?? 1;
-    ctx.beginPath();
-    ctx.moveTo(a.x,a.y); ctx.lineTo(aDim.x,aDim.y);
-    ctx.moveTo(b.x,b.y); ctx.lineTo(bDim.x,bDim.y);
-    ctx.stroke();
-
-    // dim line split around text
-    ctx.strokeStyle=opts.color ?? "#e5e7eb";
-    ctx.lineWidth=opts.lineW ?? 1.4;
-    ctx.beginPath();
-    ctx.moveTo(aDim.x,aDim.y); ctx.lineTo(gx1.x,gx1.y);
-    ctx.moveTo(gx2.x,gx2.y); ctx.lineTo(bDim.x,bDim.y);
-    ctx.stroke();
-
-    // dots
-    const r = opts.dotR ?? 2.2;
-    ctx.fillStyle=opts.dotFill ?? "#e5e7eb";
-    ctx.beginPath(); ctx.arc(aDim.x,aDim.y,r,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(bDim.x,bDim.y,r,0,Math.PI*2); ctx.fill();
-
-    let rot=ang;
-    if(rot>Math.PI/2 || rot<-Math.PI/2) rot+=Math.PI;
-
-    ctx.translate(mx,my);
-    ctx.rotate(rot);
-    ctx.textAlign="center";
-    ctx.textBaseline="middle";
-    ctx.fillStyle=opts.textColor ?? "#e5e7eb";
-    ctx.fillText(text, 0, opts.textNudge ?? 0);
-    ctx.restore();
-  }
-
-  function drawIsoGrid(ctx,pts3d,toCanvas,w,h){
-    if(!ctx||!pts3d||pts3d.length<1) return;
-    let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
-    for(const p of pts3d){minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y);}
-    const k=view.baseScale*view.zoom, spanProjX=w/Math.max(k,1e-6), spanProjY=h/Math.max(k,1e-6), extra=Math.max(spanProjX,spanProjY)*1.4;
-    const x0=minX-extra,x1=maxX+extra,y0=minY-extra,y1=maxY+extra,minor=50,majorEvery=5;
-
-    const drawFamily=(drawLineFn,spacing,aMinor,aMajor)=>{
-      for(let pass=0;pass<2;pass++){
-        const isMajor=pass===1, alpha=isMajor?aMajor:aMinor, width=isMajor?1.4:1.0;
-        ctx.strokeStyle=`rgba(147,197,253,${alpha})`; ctx.lineWidth=width;
-        drawLineFn(isMajor,spacing);
-      }
+      dimsEnabled: $("#dimsEnabled")
     };
 
-    drawFamily((isMajor,step)=>{
-      const start=Math.floor(x0/step), end=Math.ceil(x1/step);
-      for(let i=start;i<=end;i++){
-        if(isMajor&&(i%majorEvery!==0)) continue;
-        if(!isMajor&&(i%majorEvery===0)) continue;
-        const x=i*step, a=toCanvas(projectIso({x,y:y0,z:0})), b=toCanvas(projectIso({x,y:y1,z:0}));
-        ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
-      }
-    },minor,.08,.16);
+    const ctxIso = dom.isoCanvas ? dom.isoCanvas.getContext("2d") : null;
 
-    drawFamily((isMajor,step)=>{
-      const start=Math.floor(y0/step), end=Math.ceil(y1/step);
-      for(let i=start;i<=end;i++){
-        if(isMajor&&(i%majorEvery!==0)) continue;
-        if(!isMajor&&(i%majorEvery===0)) continue;
-        const y=i*step, a=toCanvas(projectIso({x:x0,y,z:0})), b=toCanvas(projectIso({x:x1,y,z:0}));
-        ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
-      }
-    },minor,.08,.16);
+    // ------------------------------------------------------------
+    // State
+    // ------------------------------------------------------------
+    const COS30 = Math.cos(Math.PI / 6);
+    const SIN30 = Math.sin(Math.PI / 6);
 
-    drawFamily((isMajor,step)=>{
-      const cMin=(x0+y0), cMax=(x1+y1);
-      const start=Math.floor(cMin/step), end=Math.ceil(cMax/step);
-      for(let i=start;i<=end;i++){
-        if(isMajor&&(i%majorEvery!==0)) continue;
-        if(!isMajor&&(i%majorEvery===0)) continue;
-        const c=i*step;
-        let xa=x0,ya=c-xa, xb=x1,yb=c-xb;
-        if(ya<y0){ya=y0;xa=c-ya} if(ya>y1){ya=y1;xa=c-ya}
-        if(yb<y0){yb=y0;xb=c-yb} if(yb>y1){yb=y1;xb=c-yb}
-        if(xa<x0-1e-6||xa>x1+1e-6||xb<x0-1e-6||xb>x1+1e-6) continue;
-        const a=toCanvas(projectIso({x:xa,y:ya,z:0})), b=toCanvas(projectIso({x:xb,y:yb,z:0}));
-        ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
-      }
-    },minor,.06,.14);
-  }
-
-function drawIso(){
-  if(!ctxIso) return;
-
-  const parsed = parseSteps(points3dInput.value);
-  if(!parsed || parsed.length < 1){
-    show(errorIso,true);
-    isoCountOut.textContent="–";
-    isoLenOut.textContent="–";
-    const {w,h}=ensureCanvasDpr();
-    ctxIso.clearRect(0,0,w,h);
-    return;
-  }
-
-  show(errorIso,false);
-  isoSteps = parsed;
-  renderStepsList();
-
-  const { verts: pts3d, corners } = stepsToPointsWithCorners(isoSteps);
-  isoCountOut.textContent = String(pts3d.length);
-  isoLenOut.textContent = polylineLength3d(pts3d).toFixed(1) + " mm";
-
-  const proj = pts3d.map(projectIso);
-  const {w,h} = ensureCanvasDpr();
-  if(!isFinite(view.baseScale) || view.baseScale<=0) fitView(false);
-
-  const toCanvas = p => {
-    const k=view.baseScale*view.zoom;
-    return {
-      x: view.baseCx + p.x*k + view.panX,
-      y: view.baseCy + p.y*k + view.panY
+    const dirMap = {
+      E: { dx: 1, dy: 0, dz: 0 },
+      W: { dx: -1, dy: 0, dz: 0 },
+      N: { dx: 0, dy: 1, dz: 0 },
+      S: { dx: 0, dy: -1, dz: 0 },
+      UP: { dx: 0, dy: 0, dz: 1 },
+      DOWN: { dx: 0, dy: 0, dz: -1 }
     };
-  };
 
-  // centroid in canvas coords (for outward placement)
-  const centroid = proj.reduce((acc,p)=>({x:acc.x+p.x,y:acc.y+p.y}),{x:0,y:0});
-  centroid.x/=proj.length; centroid.y/=proj.length;
-  const centroidC = toCanvas(centroid);
+    const state = {
+      isoSteps: [],
+      showDims: !!dom.dimsEnabled?.checked,
+      view: {
+        baseScale: 1,
+        baseCx: 0,
+        baseCy: 0,
+        zoom: 1,
+        panX: 0,
+        panY: 0,
+        rot: 3
+      },
+      pointers: new Map(),
+      dragStart: null,
+      pinchStart: null
+    };
 
-  const outwardSignFor2D = (a,b)=>{
-    const dx=b.x-a.x, dy=b.y-a.y, L=Math.hypot(dx,dy);
-    if(L<1e-9) return 1;
-    const nx=-dy/L, ny=dx/L;
-    const mx=(a.x+b.x)/2, my=(a.y+b.y)/2, off=10;
-    const pPlus ={x:mx+nx*off, y:my+ny*off};
-    const pMinus={x:mx-nx*off, y:my-ny*off};
-    const dPlus =Math.hypot(pPlus.x-centroidC.x, pPlus.y-centroidC.y);
-    const dMinus=Math.hypot(pMinus.x-centroidC.x,pMinus.y-centroidC.y);
-    return (dPlus>=dMinus)?1:-1;
-  };
+    // ------------------------------------------------------------
+    // Prevent gesture-zoom only on canvas
+    // ------------------------------------------------------------
+    ["gesturestart", "gesturechange", "gestureend"].forEach((eventName) => {
+      on(dom.isoCanvas, eventName, (e) => e.preventDefault(), { passive: false });
+    });
 
-  const sameAxisDir = (a,b)=>String(a||"").toUpperCase()===String(b||"").toUpperCase();
+    let lastCanvasTouchEnd = 0;
+    on(
+      dom.isoCanvas,
+      "touchend",
+      (e) => {
+        const now = Date.now();
+        if (now - lastCanvasTouchEnd <= 300) e.preventDefault();
+        lastCanvasTouchEnd = now;
+      },
+      { passive: false }
+    );
 
-  // ✅ NYTT: sprid måtten mer när man zoomar ut
-  // zoom=1 => ~1.0
-  // zoom=0.25 => ~2.0 (måtten hamnar längre ifrån)
-  // zoom=4 => ~0.5 (måtten kommer närmare, men OK)
-  const dimSpread = clamp(1/Math.sqrt(Math.max(view.zoom, 1e-6)), 0.75, 2.2);
+    // ------------------------------------------------------------
+    // Mode switching
+    // ------------------------------------------------------------
+    function showMode(mode) {
+      show(dom.modeHeightAngle, mode === "heightAngle");
+      show(dom.modeHowto, mode === "howto");
+      show(dom.modeIso3d, mode === "iso3d");
 
-  // --- clear + background ---
-  ctxIso.clearRect(0,0,w,h);
-  drawIsoGrid(ctxIso, pts3d, toCanvas, w, h);
-  drawMiniAxes();
+      const isoActive = mode === "iso3d";
+      show(dom.illustrationPanel, !isoActive);
+      dom.layoutRoot.classList.toggle("iso-only", isoActive);
 
-  // --- main polyline ---
-  ctxIso.strokeStyle="#22c55e";
-  ctxIso.lineWidth=4;
-  ctxIso.beginPath();
-  const p0 = toCanvas(proj[0]);
-  ctxIso.moveTo(p0.x,p0.y);
-  for(let i=1;i<proj.length;i++){
-    const pi=toCanvas(proj[i]);
-    ctxIso.lineTo(pi.x,pi.y);
-  }
-  ctxIso.stroke();
-
-  // --- helper right-angle path for OFFSET steps (dashed) ---
-  ctxIso.save();
-  ctxIso.setLineDash([6,4]);
-  ctxIso.strokeStyle="rgba(56,189,248,.55)";
-  ctxIso.lineWidth=2;
-  for(const c of corners){
-    if(!c) continue;
-    const a  = toCanvas(projectIso(c.start));
-    const mid= toCanvas(projectIso(c.corner));
-    const b  = toCanvas(projectIso(c.end));
-    ctxIso.beginPath();
-    ctxIso.moveTo(a.x,a.y);
-    ctxIso.lineTo(mid.x,mid.y);
-    ctxIso.lineTo(b.x,b.y);
-    ctxIso.stroke();
-  }
-  ctxIso.restore();
-
-  // --- points ---
-  for(let i=0;i<proj.length;i++){
-    const c=toCanvas(proj[i]);
-    ctxIso.beginPath();
-    if(i===0){
-      ctxIso.fillStyle="#e5e7eb";
-      ctxIso.arc(c.x,c.y,5,0,Math.PI*2); ctxIso.fill();
-      ctxIso.strokeStyle="rgba(248,250,252,.7)";
-      ctxIso.lineWidth=2; ctxIso.stroke();
-    }else if(i===proj.length-1){
-      ctxIso.fillStyle="#f97316";
-      ctxIso.arc(c.x,c.y,5,0,Math.PI*2); ctxIso.fill();
-      ctxIso.strokeStyle="rgba(2,6,23,.8)";
-      ctxIso.lineWidth=2; ctxIso.stroke();
-    }else{
-      ctxIso.fillStyle="#e5e7eb";
-      ctxIso.arc(c.x,c.y,3,0,Math.PI*2); ctxIso.fill();
-    }
-  }
-
-  // --- dimensions (ONLY if toggle is ON) ---
-  if(showDims){
-    for(let i=0;i<proj.length-1;i++){
-      const a=toCanvas(proj[i]);
-      const b=toCanvas(proj[i+1]);
-      const s=isoSteps[i];
-      if(!s) continue;
-
-      const signSeg = outwardSignFor2D(a,b);
-
-      // Segment dimension (CARD or OFF hypotenuse L)
-      if(s.type==="OFF"){
-        drawCanvasDimCAD(ctxIso, a, b, `L ${s.mm.toFixed(1)} mm`, signSeg, {
-          color:"#e5e7eb",
-          extColor:"rgba(248,250,252,.65)",
-          offPx: (14 * dimSpread),      // ⬅️ längre ifrån
-          minLenPx:26,
-          font:"12px system-ui",
-          lineW:1.3,
-          extW:1.0,
-          dotR:2.2,
-          dotFill:"#e5e7eb",
-          textColor:"#e5e7eb",
-          gapPad:5
-        });
-      }else{
-        drawCanvasDimCAD(ctxIso, a, b, `${s.mm.toFixed(1)} mm`, signSeg, {
-          color:"#e5e7eb",
-          extColor:"rgba(248,250,252,.65)",
-          offPx: (14 * dimSpread),      // ⬅️ längre ifrån
-          minLenPx:26,
-          font:"12px system-ui",
-          lineW:1.3,
-          extW:1.0,
-          dotR:2.2,
-          dotFill:"#e5e7eb",
-          textColor:"#e5e7eb",
-          gapPad:5
-        });
+      if (mode === "heightAngle") {
+        calculateHeightAngle();
       }
 
-      // OFF: dimension on true offset leg (corner -> end)
-      if(s.type==="OFF" && corners[i]){
-        const mid = toCanvas(projectIso(corners[i].corner));
-        const end = toCanvas(projectIso(corners[i].end));
-        const signOff = outwardSignFor2D(mid,end);
-
-        drawCanvasDimCAD(ctxIso, mid, end, `off ${s.off.toFixed(1)} mm`, signOff, {
-          color:"rgba(56,189,248,.95)",
-          extColor:"rgba(56,189,248,.70)",
-          offPx: (20 * dimSpread),      // ⬅️ ännu lite längre
-          minLenPx:28,
-          font:"12px system-ui",
-          lineW:1.2,
-          extW:1.0,
-          dotR:2.0,
-          dotFill:"rgba(56,189,248,.95)",
-          textColor:"#e5e7eb",
-          gapPad:5
-        });
-
-        // TOTAL från föregående stegs START till kateten (corner)
-        const prev = isoSteps[i-1];
-        if(prev && prev.type==="CARD" && sameAxisDir(prev.dir, s.dir)){
-          const startPrev3d = pts3d[i-1];
-          const corner3d    = corners[i].corner;
-
-          const A = toCanvas(projectIso(startPrev3d));
-          const B = toCanvas(projectIso(corner3d));
-          const signTot = outwardSignFor2D(A,B);
-
-          const totalToKatet = prev.mm + s.P;
-
-          drawCanvasDimCAD(ctxIso, A, B, `tot ${totalToKatet.toFixed(1)} mm`, signTot, {
-            color:"rgba(250,204,21,.95)",
-            extColor:"rgba(250,204,21,.70)",
-            offPx: (26 * dimSpread),     // ⬅️ längst ut så den inte krockar
-            minLenPx:30,
-            font:"12px system-ui",
-            lineW:1.15,
-            extW:1.0,
-            dotR:2.0,
-            dotFill:"rgba(250,204,21,.95)",
-            textColor:"#e5e7eb",
-            gapPad:5
-          });
-        }
+      if (mode === "iso3d") {
+        syncStepsFromTextarea();
+        fitView(false);
+        drawIso();
       }
     }
-  }
-}
-on(offsetEnabled,"change",()=>{show(offsetPanel,offsetEnabled.checked); show(errorOffset,false);});
-  const validateOffsetInputs=()=>{
-    const ang=readNum(offsetAngleInput), off=readNum(offsetMmInput);
-    if(!isFinite(ang)||!isFinite(off)||off<=0) return null;
-    const a=Math.abs(ang); if(!(a>0&&a<90)) return null;
-    return {ang,off};
-  };
 
-  stepBtns.forEach(btn=>on(btn,"click",()=>{
-    const dir=btn.dataset.dir;
-    if(!offsetEnabled.checked){
-      const mm=readNum(stepMmInput); if(!isFinite(mm)||mm<=0) return;
-      isoSteps.push({type:"CARD",dir,mm});
-      renderStepsList(); syncTextareaFromSteps(); fitView(true); drawIso(); return;
+    function initTabs() {
+      dom.modeButtons.forEach((btn) => {
+        on(btn, "click", () => {
+          dom.modeButtons.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          showMode(btn.dataset.mode);
+        });
+      });
     }
-    const v=validateOffsetInputs();
-    if(!v){show(errorOffset,true);return;}
-    show(errorOffset,false);
-    const step=buildOffsetStep(dir,v.ang,v.off);
-    if(!step){show(errorOffset,true);return;}
-    isoSteps.push(step);
-    renderStepsList(); syncTextareaFromSteps(); fitView(true); drawIso();
-  }));
 
-  on(undoStepBtn,"click",()=>{isoSteps.pop();renderStepsList();syncTextareaFromSteps();fitView(true);drawIso();});
-  on(clearStepsBtn,"click",()=>{
-    isoSteps=[]; renderStepsList(); syncTextareaFromSteps();
-    isoCountOut.textContent="–"; isoLenOut.textContent="–";
-    show(errorIso,false); show(errorOffset,false); resetView();
-  });
+    // ------------------------------------------------------------
+    // 90° kick
+    // ------------------------------------------------------------
+    function updateDiagram(x, y, length, angleDeg) {
+      const size = 220;
+      const padding = 24;
+      const width = size - padding * 2;
+      const height = size - padding * 2;
 
-  on(points3dInput,"input",()=>{
-    const parsed=parseSteps(points3dInput.value);
-    if(parsed){isoSteps=parsed;renderStepsList();show(errorIso,false);fitView(true);drawIso();}
-  });
+      const safeX = Math.max(x, 1e-6);
+      const safeY = Math.max(y, 1e-6);
+      const reservedRightPx = 30;
+      const widthForTriangle = width - reservedRightPx;
+      const scale = Math.min(widthForTriangle / safeX, height / safeY);
 
-  // zoom + pan
-  const getCanvasPointFromEvent=e=>{const r=isoCanvas.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};};
+      const originX = padding;
+      const originY = size - padding;
+      const xFoot = originX + safeX * scale;
+      const yFoot = originY;
+      const xTop = xFoot;
+      const yTop = originY - safeY * scale;
+      const baseEndX = Math.min(xFoot + reservedRightPx, size - padding);
 
-  on(isoCanvas,"wheel",e=>{
-    e.preventDefault();
-    ensureCanvasDpr();
-    const p=getCanvasPointFromEvent(e);
-    const oldZoom=view.zoom, zoomFactor=Math.exp((-e.deltaY)*.0015), newZoom=clamp(oldZoom*zoomFactor,.2,8);
-    const kOld=view.baseScale*oldZoom, kNew=view.baseScale*newZoom;
-    const wx=(p.x-view.baseCx-view.panX)/kOld, wy=(p.y-view.baseCy-view.panY)/kOld;
-    view.zoom=newZoom;
-    view.panX=p.x-view.baseCx-wx*kNew;
-    view.panY=p.y-view.baseCy-wy*kNew;
-    drawIso();
-  },{passive:false});
+      dom.baseLeg.setAttribute("x1", originX);
+      dom.baseLeg.setAttribute("y1", originY);
+      dom.baseLeg.setAttribute("x2", baseEndX);
+      dom.baseLeg.setAttribute("y2", originY);
 
-  const pointers=new Map(); let dragStart=null, pinchStart=null;
-  const getCenterAndDist=()=>{
-    const pts=Array.from(pointers.values()); if(pts.length<2) return null;
-    const a=pts[0], b=pts[1]; return {cx:(a.x+b.x)/2, cy:(a.y+b.y)/2, dist:Math.hypot(b.x-a.x,b.y-a.y)};
-  };
+      dom.riseLeg.setAttribute("x1", originX);
+      dom.riseLeg.setAttribute("y1", originY);
+      dom.riseLeg.setAttribute("x2", originX);
+      dom.riseLeg.setAttribute("y2", yTop);
 
-  on(isoCanvas,"pointerdown",e=>{
-    isoCanvas.setPointerCapture(e.pointerId);
-    const p=getCanvasPointFromEvent(e);
-    pointers.set(e.pointerId,p);
-    if(pointers.size===1){dragStart={x:p.x,y:p.y,panX:view.panX,panY:view.panY}; pinchStart=null;}
-    else if(pointers.size===2){
-      const cd=getCenterAndDist(); if(!cd) return;
-      pinchStart={dist:cd.dist,zoom:view.zoom,panX:view.panX,panY:view.panY}; dragStart=null;
+      dom.hypLeg.setAttribute("x1", originX);
+      dom.hypLeg.setAttribute("y1", originY);
+      dom.hypLeg.setAttribute("x2", xTop);
+      dom.hypLeg.setAttribute("y2", yTop);
+
+      dom.endPoint.setAttribute("cx", xTop);
+      dom.endPoint.setAttribute("cy", yTop);
+
+      dom.projLine.setAttribute("x1", xTop);
+      dom.projLine.setAttribute("y1", originY + 10);
+      dom.projLine.setAttribute("x2", xTop);
+      dom.projLine.setAttribute("y2", 20);
+
+      dom.zeroPoint.setAttribute("cx", xFoot);
+      dom.zeroPoint.setAttribute("cy", yFoot);
+
+      dom.labelZero.setAttribute("x", xFoot + 4);
+      dom.labelZero.setAttribute("y", originY - 5);
+      dom.labelZero.textContent = "0";
+
+      const fxText = `fx ≈ ${x.toFixed(1)} mm`;
+      const heightText = `h ≈ ${y.toFixed(1)} mm`;
+      const lengthText = length ? `L ≈ ${length.toFixed(1)} mm` : "L";
+      const angleText = Number.isFinite(angleDeg) ? `v ≈ ${angleDeg.toFixed(1)}°` : "v";
+
+      dom.labelFx.setAttribute("x", (originX + xFoot) / 2);
+      dom.labelFx.setAttribute("y", originY + 12);
+      dom.labelFx.textContent = fxText;
+
+      dom.labelHeight.setAttribute("x", originX - 4);
+      dom.labelHeight.setAttribute("y", (originY + yTop) / 2);
+      dom.labelHeight.textContent = heightText;
+
+      dom.labelHyp.setAttribute("x", (originX + xTop) / 2);
+      dom.labelHyp.setAttribute("y", (originY + yTop) / 2 - 4);
+      dom.labelHyp.textContent = lengthText;
+
+      dom.labelAngle.setAttribute("x", originX + 20);
+      dom.labelAngle.setAttribute("y", originY - 8);
+      dom.labelAngle.textContent = angleText;
     }
-  });
 
-  on(isoCanvas,"pointermove",e=>{
-    if(!pointers.has(e.pointerId)) return;
-    const p=getCanvasPointFromEvent(e);
-    pointers.set(e.pointerId,p);
+    function calculateHeightAngle() {
+      const height = readNumber(dom.height2Input);
+      const angleDeg = readNumber(dom.angle2Input);
 
-    if(pointers.size===1&&dragStart){
-      view.panX=dragStart.panX+(p.x-dragStart.x);
-      view.panY=dragStart.panY+(p.y-dragStart.y);
-      drawIso();
-    }else if(pointers.size===2&&pinchStart){
-      const cd=getCenterAndDist(); if(!cd) return;
-      const zoomFactor=cd.dist/Math.max(pinchStart.dist,1e-6);
-      const newZoom=clamp(pinchStart.zoom*zoomFactor,.2,8);
-      const center={x:cd.cx,y:cd.cy};
-      const kOld=view.baseScale*pinchStart.zoom, kNew=view.baseScale*newZoom;
-      const wx=(center.x-view.baseCx-pinchStart.panX)/kOld, wy=(center.y-view.baseCy-pinchStart.panY)/kOld;
-      view.zoom=newZoom;
-      view.panX=center.x-view.baseCx-wx*kNew;
-      view.panY=center.y-view.baseCy-wy*kNew;
-      drawIso();
-    }
-  });
-
-  const endPointer=e=>{
-    if(!pointers.has(e.pointerId)) return;
-    pointers.delete(e.pointerId);
-    if(pointers.size===0){dragStart=null;pinchStart=null;}
-    else if(pointers.size===1){
-      const rem=Array.from(pointers.values())[0];
-      dragStart={x:rem.x,y:rem.y,panX:view.panX,panY:view.panY};
-      pinchStart=null;
-    }
-  };
-  ["pointerup","pointercancel","pointerleave"].forEach(ev=>on(isoCanvas,ev,endPointer));
-
-  on(window,"resize",()=>{ if(!modeIso3dEl.classList.contains("hidden")){fitView(true);drawIso();} });
-
-  // --- PDF export ---
-  function getJsPDFClass(){ if(window.jspdf&&window.jspdf.jsPDF) return window.jspdf.jsPDF; if(window.jsPDF) return window.jsPDF; return null; }
-  const fmtMm=(v,d=1)=>isFinite(v)?`${v.toFixed(d)} mm`:"–";
-  const fmtDeg=(v,d=1)=>isFinite(v)?`${v.toFixed(d)}°`:"–";
-  const vec3=(a,b)=>({x:b.x-a.x,y:b.y-a.y,z:b.z-a.z});
-  const len3=v=>Math.hypot(v.x,v.y,v.z);
-  const dot3=(a,b)=>a.x*b.x+a.y*b.y+a.z*b.z;
-  const norm3=v=>{const L=len3(v);return L<1e-9?{x:0,y:0,z:0,L:0}:{x:v.x/L,y:v.y/L,z:v.z/L,L};};
-  function bendAngle3D(prev,cur,next){
-    const u=norm3(vec3(prev,cur)), v=norm3(vec3(cur,next));
-    if(u.L<1e-9||v.L<1e-9) return NaN;
-    let c=dot3(u,v); c=Math.max(-1,Math.min(1,c));
-    return Math.acos(c)*180/Math.PI;
-  }
-
-  function exportIsoPdf(){
-    try{
-      const EXPORT_MATCH_CANVAS_VIEW = false;
-      const TITLE = "ISO-ritning";
-
-      const parsed = parseSteps(points3dInput.value);
-      if(!parsed || parsed.length < 1){
-        alert("Inga steg att exportera.");
+      if (
+        !Number.isFinite(height) ||
+        !Number.isFinite(angleDeg) ||
+        height <= 0 ||
+        angleDeg <= 0 ||
+        angleDeg >= 90
+      ) {
+        show(dom.errorHeightAngle, true);
+        dom.lenOut2.textContent = "–";
+        dom.fxOut2.textContent = "–";
+        updateDiagram(1, 1, Math.SQRT2, 45);
         return;
       }
 
-      const JsPDF = getJsPDFClass();
-      if(!JsPDF){
-        alert("jsPDF hittades inte. Kontrollera att CDN-scriptet laddas.");
-        return;
+      show(dom.errorHeightAngle, false);
+
+      const angleRad = degToRad(angleDeg);
+      const length = height / Math.sin(angleRad);
+      const fx = length * Math.cos(angleRad);
+
+      dom.lenOut2.textContent = `${length.toFixed(3)} mm`;
+      dom.fxOut2.textContent = `${fx.toFixed(3)} mm`;
+
+      updateDiagram(fx, height, length, angleDeg);
+    }
+
+    function initHeightAngle() {
+      on(dom.calcHeightAngleBtn, "click", (e) => {
+        e.preventDefault();
+        calculateHeightAngle();
+      });
+
+      on(dom.height2Input, "input", calculateHeightAngle);
+      on(dom.angle2Input, "input", calculateHeightAngle);
+    }
+
+    // ------------------------------------------------------------
+    // ISO data
+    // ------------------------------------------------------------
+    function buildOffsetStep(dir, angleDeg, offsetMm) {
+      const absAngle = Math.abs(angleDeg);
+      if (!(absAngle > 0 && absAngle < 90)) return null;
+
+      const angleRad = degToRad(absAngle);
+      const sinA = Math.sin(angleRad);
+      const tanA = Math.tan(angleRad);
+
+      if (sinA === 0 || tanA === 0) return null;
+
+      const hypotenuseLength = offsetMm / sinA;
+      const projection = offsetMm / tanA;
+      const sign = angleDeg >= 0 ? 1 : -1;
+
+      let proj = { dx: 0, dy: 0, dz: 0 };
+      let offv = { dx: 0, dy: 0, dz: 0 };
+
+      if (dir === "E" || dir === "W" || dir === "N" || dir === "S") {
+        const v = dirMap[dir];
+        proj = { dx: v.dx * projection, dy: v.dy * projection, dz: 0 };
+        offv = { dx: 0, dy: 0, dz: sign * offsetMm };
+      } else if (dir === "UP" || dir === "DOWN") {
+        const v = dirMap[dir];
+        proj = { dx: 0, dy: 0, dz: v.dz * projection };
+        offv = { dx: sign * offsetMm, dy: 0, dz: 0 };
+      } else {
+        return null;
       }
 
-      const steps = parsed;
-      const { verts: pts3d, corners } = stepsToPointsWithCorners(steps);
-
-      const doc = new JsPDF({ unit:"mm", format:"a4", orientation:"landscape" });
-      const pageW = doc.internal.pageSize.getWidth();
-      const pageH = doc.internal.pageSize.getHeight();
-
-      function drawArrowHeadPDF(doc, x, y, angRad, size){
-        const left  = angRad + Math.PI*0.85;
-        const right = angRad - Math.PI*0.85;
-
-        const x1 = x + Math.cos(left)  * size;
-        const y1 = y + Math.sin(left)  * size;
-        const x2 = x + Math.cos(right) * size;
-        const y2 = y + Math.sin(right) * size;
-
-        doc.setFillColor(0,0,0);
-        if(typeof doc.triangle === "function") doc.triangle(x, y, x1, y1, x2, y2, "F");
-        else{
-          doc.line(x,y, x1,y1);
-          doc.line(x,y, x2,y2);
-        }
-      }
-
-      const placedLabelRects = [];
-      const rectOverlap = (a,b)=>!(a.x+a.w<b.x || b.x+b.w<a.x || a.y+a.h<b.y || b.y+b.h<a.y);
-      const collidesAny = (r)=>placedLabelRects.some(p=>rectOverlap(p,r));
-      const rememberRect = (r)=>placedLabelRects.push(r);
-
-      function chooseDimSide(a, b, centroid, frame){
-        const dx=b.x-a.x, dy=b.y-a.y;
-        const L=Math.hypot(dx,dy);
-        if(L<1e-9) return 1;
-
-        const ux=dx/L, uy=dy/L;
-        const nx=-uy, ny=ux;
-
-        const off=9;
-        const minLen=24;
-
-        const evalSide = (sign)=>{
-          const ex=nx*off*sign, ey=ny*off*sign;
-
-          const need=Math.max(0, minLen - L);
-          const ax=a.x + ex - ux*(need/2);
-          const ay=a.y + ey - uy*(need/2);
-          const bx=b.x + ex + ux*(need/2);
-          const by=b.y + ey + uy*(need/2);
-
-          const mx=(ax+bx)/2, my=(ay+by)/2;
-
-          const dCent = Math.hypot(mx-centroid.x, my-centroid.y);
-
-          const margin=2.0;
-          const inFrame =
-            ax>frame.x+margin && ax<frame.x+frame.w-margin &&
-            bx>frame.x+margin && bx<frame.x+frame.w-margin &&
-            ay>frame.y+margin && ay<frame.y+frame.h-margin &&
-            by>frame.y+margin && by<frame.y+frame.h-margin;
-
-          const outPenalty = inFrame ? 0 : 60;
-
-          const vx = mx-centroid.x, vy = my-centroid.y;
-          const align = (vx*nx + vy*ny) * sign;
-          const alignBonus = align > 0 ? 25 : 0;
-
-          const fakeText = "0000.0 mm";
-          doc.setFont("helvetica","normal"); doc.setFontSize(9);
-          const tw=doc.getTextWidth(fakeText);
-          const bw=tw + 4, bh=5.2;
-          const rect={x:mx-bw/2,y:my-bh/2,w:bw,h:bh};
-          const colPenalty = collidesAny(rect) ? 80 : 0;
-
-          return dCent + alignBonus - outPenalty - colPenalty;
-        };
-
-        const scorePlus  = evalSide( 1);
-        const scoreMinus = evalSide(-1);
-        return (scorePlus >= scoreMinus) ? 1 : -1;
-      }
-
-      function drawDimAlongSegment(a, b, valueText, centroid, frame, style = {}) {
-        const dx = b.x - a.x, dy = b.y - a.y;
-        const segL = Math.hypot(dx, dy);
-        if (segL < 1e-6) return;
-
-        const ux = dx / segL, uy = dy / segL;
-        const nx = -uy, ny = ux;
-
-        const sign = chooseDimSide(a, b, centroid, frame);
-
-        const off   = style.off ?? 9;
-        const ex    = nx * off * sign;
-        const ey    = ny * off * sign;
-
-        const minLen = style.minLen ?? 24;
-        const need = Math.max(0, minLen - segL);
-
-        const aDim = { x: a.x + ex - ux * (need / 2), y: a.y + ey - uy * (need / 2) };
-        const bDim = { x: b.x + ex + ux * (need / 2), y: b.y + ey + uy * (need / 2) };
-
-        const dimColor = style.color ?? [0, 0, 0];
-        const extColor = style.extColor ?? [0, 0, 0];
-
-        doc.setDrawColor(...extColor);
-        doc.setLineWidth(style.extW ?? 0.15);
-        doc.line(a.x, a.y, aDim.x, aDim.y);
-        doc.line(b.x, b.y, bDim.x, bDim.y);
-
-        doc.setDrawColor(...dimColor);
-        doc.setLineWidth(style.lineW ?? 0.20);
-
-        const ang = Math.atan2(bDim.y - aDim.y, bDim.x - aDim.x);
-
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(style.fontSize ?? 8.5);
-
-        const tw = doc.getTextWidth(valueText);
-        const gap = tw / 2 + (style.gapPad ?? 1.6);
-
-        const mx = (aDim.x + bDim.x) / 2;
-        const my = (aDim.y + bDim.y) / 2;
-
-        const gx1 = mx - Math.cos(ang) * gap;
-        const gy1 = my - Math.sin(ang) * gap;
-        const gx2 = mx + Math.cos(ang) * gap;
-        const gy2 = my + Math.sin(ang) * gap;
-
-        doc.line(aDim.x, aDim.y, gx1, gy1);
-        doc.line(gx2, gy2, bDim.x, bDim.y);
-
-        const r = style.dotR ?? 0.55;
-        doc.setFillColor(...(style.dotFill ?? [0,0,0]));
-        doc.circle(aDim.x, aDim.y, r, "F");
-        doc.circle(bDim.x, bDim.y, r, "F");
-
-        let rot = ang * 180 / Math.PI;
-        if (rot > 90 || rot < -90) rot += 180;
-
-        doc.setTextColor(...(style.textColor ?? [0,0,0]));
-        doc.text(valueText, mx, my + (style.textNudge ?? 0.6), { angle: rot, align: "center" });
-
-        const bw = tw + 3.0;
-        const bh = 4.6;
-        rememberRect({ x: mx - bw / 2, y: my - bh / 2, w: bw, h: bh, kind: "dim" });
-      }
-
-      function drawAngleLeader(doc, vertexIndex, pts2, centroid){
-        const i=vertexIndex;
-        if(i<=0 || i>=pts2.length-1) return;
-
-        const ang3d = bendAngle3D(pts3d[i-1], pts3d[i], pts3d[i+1]);
-        if(!isFinite(ang3d) || ang3d < 1 || ang3d > 179) return;
-
-        const p = pts2[i];
-
-        let vx = p.x - centroid.x;
-        let vy = p.y - centroid.y;
-        const vL = Math.hypot(vx,vy) || 1;
-        vx/=vL; vy/=vL;
-
-        const text = `${ang3d.toFixed(1)}°`;
-
-        doc.setFont("helvetica","normal");
-        doc.setFontSize(8);
-        doc.setTextColor(0);
-
-        const tw = doc.getTextWidth(text);
-        const bw = tw + 1.6;
-        const bh = 4.2;
-
-        const radii = [10, 14, 18, 22, 28, 36, 46, 58, 72, 90];
-
-        for(const r of radii){
-          const ax = p.x + vx*r;
-          const ay = p.y + vy*r;
-
-          const rect = { x: ax - bw/2, y: ay - bh/2, w: bw, h: bh };
-          if(collidesAny(rect)) continue;
-
-          doc.setDrawColor(0);
-          doc.setLineWidth(0.20);
-
-          const startX = ax - vx*(bw/2 + 1.0);
-          const startY = ay - vy*(bh/2 + 1.0);
-
-          doc.line(startX, startY, p.x, p.y);
-
-          const angLine = Math.atan2(p.y - startY, p.x - startX);
-          drawArrowHeadPDF(doc, p.x, p.y, angLine, 1.6);
-
-          doc.text(text, ax, ay + 1.2, { align:"center" });
-
-          rememberRect({ ...rect, kind:"ang" });
-          return;
-        }
-      }
-
-      const margin=10;
-      const tableW=95;
-      const gap=8;
-
-      const drawX0=margin;
-      const drawY0=margin;
-      const drawW=pageW - margin*2 - tableW - gap;
-      const drawH=pageH - margin*2;
-
-      const tableX0=drawX0 + drawW + gap;
-      const tableY0=margin;
-
-      const proj = pts3d.map(projectIso);
-      let toPdf;
-
-      if(EXPORT_MATCH_CANVAS_VIEW){
-        const virtualW = 900;
-        const virtualH = Math.round(virtualW * (drawH/drawW));
-        const pxToMmX = drawW / virtualW;
-        const pxToMmY = drawH / virtualH;
-
-        const k = view.baseScale * view.zoom;
-        const baseCx = view.baseCx, baseCy = view.baseCy;
-        const panX = view.panX, panY = view.panY;
-
-        const toVirtual = (p)=>({ x: baseCx + p.x*k + panX, y: baseCy + p.y*k + panY });
-
-        const vPts = proj.map(toVirtual);
-        let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
-        for(const p of vPts){minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y);}
-
-        const shiftX = (virtualW/2) - ((minX+maxX)/2);
-        const shiftY = (virtualH/2) - ((minY+maxY)/2);
-
-        toPdf = (p)=>{
-          const vv = toVirtual(p);
-          const xPx = vv.x + shiftX;
-          const yPx = vv.y + shiftY;
-          return { x: drawX0 + xPx * pxToMmX, y: drawY0 + yPx * pxToMmY };
-        };
-      }else{
-        let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
-        for(const p of proj){minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y);}
-
-        const spanX=Math.max(maxX-minX,1e-9);
-        const spanY=Math.max(maxY-minY,1e-9);
-        const pad=10;
-        const scale=Math.min((drawW-2*pad)/spanX,(drawH-2*pad)/spanY);
-        const midX=(minX+maxX)/2;
-        const midY=(minY+maxY)/2;
-        const cx=drawX0+drawW/2;
-        const cy=drawY0+drawH/2;
-
-        toPdf = (p)=>({ x: cx + (p.x-midX)*scale, y: cy + (p.y-midY)*scale });
-      }
-
-      const pts2 = proj.map(toPdf);
-
-      const centroid = pts2.reduce((acc,p)=>({x:acc.x+p.x,y:acc.y+p.y}),{x:0,y:0});
-      centroid.x/=pts2.length;
-      centroid.y/=pts2.length;
-
-      doc.setDrawColor(0);
-      doc.setLineWidth(0.35);
-      doc.rect(drawX0,drawY0,drawW,drawH);
-
-      doc.setFont("helvetica","bold");
-      doc.setFontSize(12);
-      doc.text(TITLE, drawX0+4, drawY0+6);
-
-      doc.setFont("helvetica","normal");
-      doc.setFontSize(9);
-      doc.text(`Punkter: ${pts3d.length}`, drawX0+4, drawY0+11);
-      doc.text(`Total längd (3D): ${polylineLength3d(pts3d).toFixed(1)} mm`, drawX0+4, drawY0+15);
-      doc.text(`Vy-rotation: ${((view.rot%4)+4)%4*90}°`, drawX0+4, drawY0+19);
-
-      doc.setDrawColor(16,120,60);
-      doc.setLineWidth(1.1);
-      for(let i=1;i<pts2.length;i++){
-        doc.line(pts2[i-1].x,pts2[i-1].y, pts2[i].x,pts2[i].y);
-      }
-
-      doc.setDrawColor(56,189,248);
-      doc.setLineWidth(0.50);
-      if(typeof doc.setLineDash === "function") doc.setLineDash([2.2, 1.6]);
-      for(const c of corners){
-        if(!c) continue;
-        const a = toPdf(projectIso(c.start));
-        const mid = toPdf(projectIso(c.corner));
-        const b = toPdf(projectIso(c.end));
-        doc.line(a.x,a.y, mid.x,mid.y);
-        doc.line(mid.x,mid.y, b.x,b.y);
-      }
-      if(typeof doc.setLineDash === "function") doc.setLineDash([]);
-
-      for(let i=0;i<pts2.length;i++){
-        const p=pts2[i];
-        if(i===0) doc.setFillColor(0);
-        else if(i===pts2.length-1) doc.setFillColor(230,126,34);
-        else doc.setFillColor(60);
-        doc.circle(p.x,p.y,(i===0||i===pts2.length-1)?2.0:1.4,"F");
-      }
-
-      const frame = { x: drawX0, y: drawY0, w: drawW, h: drawH };
-
-      for(let i=0;i<steps.length;i++){
-        const s=steps[i];
-        const a=pts2[i], b=pts2[i+1];
-
-        if(s.type==="CARD"){
-          drawDimAlongSegment(a,b,`${s.mm.toFixed(1)} mm`, centroid, frame, {
-            lineW:0.20, extW:0.15, dotR:0.55, fontSize:8.5, gapPad:1.6
-          });
+      const dx = proj.dx + offv.dx;
+      const dy = proj.dy + offv.dy;
+      const dz = proj.dz + offv.dz;
+
+      return {
+        type: "OFF",
+        dir,
+        ang: angleDeg,
+        off: offsetMm,
+        mm: hypotenuseLength,
+        P: projection,
+        proj,
+        offv,
+        dx,
+        dy,
+        dz
+      };
+    }
+
+    function parseSteps(text) {
+      const lines = text
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
+
+      const steps = [];
+
+      for (const line of lines) {
+        const cleaned = line.replace(/\s+/g, " ").toUpperCase();
+
+        let match = cleaned.match(
+          /^O\s+([A-Z]+)\s+([+-]?\d+(?:[.,]\d+)?)\s+([+-]?\d+(?:[.,]\d+)?)$/
+        );
+
+        if (match) {
+          const dir = match[1];
+          const angle = Number.parseFloat(match[2].replace(",", "."));
+          const offset = Number.parseFloat(match[3].replace(",", "."));
+
+          if (!dirMap[dir] || !Number.isFinite(angle) || !Number.isFinite(offset) || offset <= 0) {
+            return null;
+          }
+
+          const absAngle = Math.abs(angle);
+          if (!(absAngle > 0 && absAngle < 90)) return null;
+
+          const step = buildOffsetStep(dir, angle, offset);
+          if (!step) return null;
+
+          steps.push(step);
           continue;
         }
 
-        drawDimAlongSegment(a,b,`L ${s.mm.toFixed(1)} mm`, centroid, frame, {
-          lineW:0.20, extW:0.15, dotR:0.55, fontSize:8.5, gapPad:1.6
-        });
+        match = cleaned.match(/^([A-Z]+)\s*([+-]?\d+(?:[.,]\d+)?)$/);
+        if (!match) return null;
 
-        const c=corners[i];
-        if(c){
-          const mid = toPdf(projectIso(c.corner));
-          const end = toPdf(projectIso(c.end));
-          drawDimAlongSegment(mid, end, `off ${s.off.toFixed(1)} mm`, centroid, frame, {
-            color:[56,189,248], extColor:[56,189,248], textColor:[0,0,0],
-            lineW:0.20, extW:0.15, dotR:0.55, fontSize:8.5, gapPad:1.6, dotFill:[56,189,248]
-          });
+        const dir = match[1];
+        const mm = Number.parseFloat(match[2].replace(",", "."));
+
+        if (!dirMap[dir] || !Number.isFinite(mm) || mm <= 0) {
+          return null;
         }
+
+        steps.push({ type: "CARD", dir, mm });
       }
 
-      for(let i=1;i<pts2.length-1;i++){
-        drawAngleLeader(doc, i, pts2, centroid);
+      return steps;
+    }
+
+    function stepsToPoints(steps) {
+      let x = 0;
+      let y = 0;
+      let z = 0;
+
+      const points = [{ x, y, z }];
+
+      for (const step of steps) {
+        if (step.type === "CARD") {
+          const v = dirMap[step.dir];
+          x += v.dx * step.mm;
+          y += v.dy * step.mm;
+          z += v.dz * step.mm;
+        } else {
+          x += step.dx;
+          y += step.dy;
+          z += step.dz;
+        }
+
+        points.push({ x, y, z });
       }
 
-      doc.setDrawColor(0);
-      doc.setLineWidth(0.35);
-      doc.rect(tableX0, tableY0, tableW, drawH);
+      return points;
+    }
 
-      doc.setFont("helvetica","bold");
-      doc.setFontSize(11);
-      doc.text("Mått & vinklar", tableX0+4, tableY0+7);
+    function stepsToPointsWithCorners(steps) {
+      let x = 0;
+      let y = 0;
+      let z = 0;
 
-      doc.setFont("helvetica","normal");
-      doc.setFontSize(8);
+      const verts = [{ x, y, z }];
+      const corners = new Array(steps.length).fill(null);
 
-      let y = tableY0 + 13;
-      const lh = 4.2;
-      const row = (txt)=>{
-        if(y > tableY0 + drawH - 6) return false;
-        doc.text(txt, tableX0+4, y);
-        y += lh;
-        return true;
+      for (let i = 0; i < steps.length; i++) {
+        const step = steps[i];
+        const start = { x, y, z };
+
+        if (step.type === "CARD") {
+          const v = dirMap[step.dir];
+          x += v.dx * step.mm;
+          y += v.dy * step.mm;
+          z += v.dz * step.mm;
+          verts.push({ x, y, z });
+          continue;
+        }
+
+        const corner = {
+          x: x + step.proj.dx,
+          y: y + step.proj.dy,
+          z: z + step.proj.dz
+        };
+
+        x += step.dx;
+        y += step.dy;
+        z += step.dz;
+
+        const end = { x, y, z };
+
+        corners[i] = { start, corner, end, step };
+        verts.push(end);
+      }
+
+      return { verts, corners };
+    }
+
+    function polylineLength3d(points) {
+      let sum = 0;
+
+      for (let i = 1; i < points.length; i++) {
+        const dx = points[i].x - points[i - 1].x;
+        const dy = points[i].y - points[i - 1].y;
+        const dz = points[i].z - points[i - 1].z;
+        sum += Math.sqrt(dx * dx + dy * dy + dz * dz);
+      }
+
+      return sum;
+    }
+
+    function syncTextareaFromSteps() {
+      dom.points3dInput.value = state.isoSteps
+        .map((step) =>
+          step.type === "CARD"
+            ? `${step.dir} ${step.mm}`
+            : `O ${step.dir} ${step.ang} ${step.off}`
+        )
+        .join("\n");
+    }
+
+    function syncStepsFromTextarea() {
+      const parsed = parseSteps(dom.points3dInput.value);
+      if (!parsed) return false;
+      state.isoSteps = parsed;
+      renderStepsList();
+      return true;
+    }
+
+    function renderStepsList() {
+      dom.stepsListEl.innerHTML = "";
+      dom.stepCountChip.textContent = `${state.isoSteps.length} steg`;
+
+      state.isoSteps.forEach((step, index) => {
+        const li = document.createElement("li");
+
+        if (step.type === "CARD") {
+          li.textContent = `${index + 1}. ${step.dir} ${step.mm} mm`;
+        } else {
+          li.textContent =
+            `${index + 1}. OFFSET ${step.dir} v:${step.ang}° off:${step.off}mm` +
+            ` → L:${step.mm.toFixed(1)}mm`;
+        }
+
+        dom.stepsListEl.appendChild(li);
+      });
+    }
+
+    function validateOffsetInputs() {
+      const angle = readNumber(dom.offsetAngleInput);
+      const offset = readNumber(dom.offsetMmInput);
+
+      if (!Number.isFinite(angle) || !Number.isFinite(offset) || offset <= 0) {
+        return null;
+      }
+
+      const absAngle = Math.abs(angle);
+      if (!(absAngle > 0 && absAngle < 90)) {
+        return null;
+      }
+
+      return { ang: angle, off: offset };
+    }
+
+    // ------------------------------------------------------------
+    // ISO projection + view
+    // ------------------------------------------------------------
+    function rotateZ90(point, rotSteps) {
+      const r = ((rotSteps % 4) + 4) % 4;
+
+      if (r === 0) return { x: point.x, y: point.y, z: point.z };
+      if (r === 1) return { x: point.y, y: -point.x, z: point.z };
+      if (r === 2) return { x: -point.x, y: -point.y, z: point.z };
+      return { x: -point.y, y: point.x, z: point.z };
+    }
+
+    function projectIsoRaw(point) {
+      return {
+        x: (point.x - point.y) * COS30,
+        y: (point.x + point.y) * SIN30 - point.z
+      };
+    }
+
+    function projectIso(point3d) {
+      return projectIsoRaw(rotateZ90(point3d, state.view.rot));
+    }
+
+    function ensureCanvasDpr() {
+      if (!dom.isoCanvas || !ctxIso) {
+        return { w: 0, h: 0, dpr: 1 };
+      }
+
+      const rect = dom.isoCanvas.getBoundingClientRect();
+      const cssW = Math.max(1, Math.round(rect.width));
+      const cssH = Math.max(1, Math.round(rect.height));
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const targetW = Math.round(cssW * dpr);
+      const targetH = Math.round(cssH * dpr);
+
+      if (dom.isoCanvas.width !== targetW || dom.isoCanvas.height !== targetH) {
+        dom.isoCanvas.width = targetW;
+        dom.isoCanvas.height = targetH;
+      }
+
+      ctxIso.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { w: cssW, h: cssH, dpr };
+    }
+
+    function fitView(keepUserZoom = false) {
+      if (!state.isoSteps.length) return;
+
+      const { w, h } = ensureCanvasDpr();
+      const points = stepsToPoints(state.isoSteps);
+      const projected = points.map(projectIso);
+
+      let minX = Infinity;
+      let maxX = -Infinity;
+      let minY = Infinity;
+      let maxY = -Infinity;
+
+      for (const p of projected) {
+        minX = Math.min(minX, p.x);
+        maxX = Math.max(maxX, p.x);
+        minY = Math.min(minY, p.y);
+        maxY = Math.max(maxY, p.y);
+      }
+
+      const spanX = Math.max(maxX - minX, 1e-6);
+      const spanY = Math.max(maxY - minY, 1e-6);
+      const pad = 36;
+
+      const scale = Math.min((w - 2 * pad) / spanX, (h - 2 * pad) / spanY);
+      const midX = (minX + maxX) / 2;
+      const midY = (minY + maxY) / 2;
+
+      state.view.baseScale = scale;
+      state.view.baseCx = w / 2 - midX * scale;
+      state.view.baseCy = h / 2 - midY * scale;
+
+      if (!keepUserZoom) {
+        state.view.zoom = 1;
+        state.view.panX = 0;
+        state.view.panY = 0;
+      }
+    }
+
+    function resetView() {
+      fitView(false);
+      drawIso();
+    }
+
+    // ------------------------------------------------------------
+    // Canvas drawing helpers
+    // ------------------------------------------------------------
+    function roundRectPath(ctx, x, y, w, h, r) {
+      if (ctx.roundRect) {
+        ctx.beginPath();
+        ctx.roundRect(x, y, w, h, r);
+        return;
+      }
+
+      const rr = Math.min(r, w / 2, h / 2);
+
+      ctx.beginPath();
+      ctx.moveTo(x + rr, y);
+      ctx.arcTo(x + w, y, x + w, y + h, rr);
+      ctx.arcTo(x + w, y + h, x, y + h, rr);
+      ctx.arcTo(x, y + h, x, y, rr);
+      ctx.arcTo(x, y, x + w, y, rr);
+      ctx.closePath();
+    }
+
+    function drawCanvasDimCAD(ctx, a, b, text, outwardSign, opts = {}) {
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const segL = Math.hypot(dx, dy);
+      if (segL < 1e-6) return;
+
+      const ux = dx / segL;
+      const uy = dy / segL;
+      const nx = -uy;
+      const ny = ux;
+
+      const off = opts.offPx ?? 10;
+      const ex = nx * off * outwardSign;
+      const ey = ny * off * outwardSign;
+
+      const minLen = opts.minLenPx ?? 26;
+      const need = Math.max(0, minLen - segL);
+
+      const aDim = {
+        x: a.x + ex - ux * (need / 2),
+        y: a.y + ey - uy * (need / 2)
       };
 
-      row("Steg:");
-      for(let i=0;i<steps.length;i++){
-        const s=steps[i];
-        const idx=String(i+1).padStart(2,"0");
-        if(s.type==="CARD"){
-          if(!row(`${idx}. ${s.dir}  ${fmtMm(s.mm,1)}`)) break;
-        }else{
-          if(!row(`${idx}. O ${s.dir}  v:${fmtDeg(s.ang,1)}  off:${fmtMm(s.off,1)}`)) break;
-          if(!row(`    → L:${fmtMm(s.mm,1)}  proj:${fmtMm(s.P,1)}`)) break;
+      const bDim = {
+        x: b.x + ex + ux * (need / 2),
+        y: b.y + ey + uy * (need / 2)
+      };
+
+      const ang = Math.atan2(bDim.y - aDim.y, bDim.x - aDim.x);
+
+      ctx.save();
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      ctx.font = opts.font ?? "12px system-ui";
+      const tw = ctx.measureText(text).width;
+      const gap = tw / 2 + (opts.gapPad ?? 5);
+
+      const mx = (aDim.x + bDim.x) / 2;
+      const my = (aDim.y + bDim.y) / 2;
+
+      const gx1 = {
+        x: mx - Math.cos(ang) * gap,
+        y: my - Math.sin(ang) * gap
+      };
+
+      const gx2 = {
+        x: mx + Math.cos(ang) * gap,
+        y: my + Math.sin(ang) * gap
+      };
+
+      ctx.strokeStyle = opts.extColor ?? "rgba(248,250,252,.65)";
+      ctx.lineWidth = opts.extW ?? 1;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(aDim.x, aDim.y);
+      ctx.moveTo(b.x, b.y);
+      ctx.lineTo(bDim.x, bDim.y);
+      ctx.stroke();
+
+      ctx.strokeStyle = opts.color ?? "#e5e7eb";
+      ctx.lineWidth = opts.lineW ?? 1.4;
+      ctx.beginPath();
+      ctx.moveTo(aDim.x, aDim.y);
+      ctx.lineTo(gx1.x, gx1.y);
+      ctx.moveTo(gx2.x, gx2.y);
+      ctx.lineTo(bDim.x, bDim.y);
+      ctx.stroke();
+
+      const r = opts.dotR ?? 2.2;
+      ctx.fillStyle = opts.dotFill ?? "#e5e7eb";
+      ctx.beginPath();
+      ctx.arc(aDim.x, aDim.y, r, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(bDim.x, bDim.y, r, 0, Math.PI * 2);
+      ctx.fill();
+
+      let rot = ang;
+      if (rot > Math.PI / 2 || rot < -Math.PI / 2) {
+        rot += Math.PI;
+      }
+
+      ctx.translate(mx, my);
+      ctx.rotate(rot);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = opts.textColor ?? "#e5e7eb";
+      ctx.fillText(text, 0, opts.textNudge ?? 0);
+      ctx.restore();
+    }
+
+    function drawMiniAxes() {
+      if (!ctxIso) return;
+
+      const { w, h } = ensureCanvasDpr();
+      const s = Math.min(1, Math.max(0.72, Math.min(w / 420, h / 280)));
+      const x = 10;
+      const y = 10;
+      const boxW = 92 * s;
+      const boxH = 66 * s;
+      const pad = 10 * s;
+      const axisLen = 80;
+
+      const O = projectIso({ x: 0, y: 0, z: 0 });
+      const E = projectIso({ x: axisLen, y: 0, z: 0 });
+      const N = projectIso({ x: 0, y: axisLen, z: 0 });
+      const U = projectIso({ x: 0, y: 0, z: axisLen });
+      const points = [O, E, N, U];
+
+      let minX = Infinity;
+      let maxX = -Infinity;
+      let minY = Infinity;
+      let maxY = -Infinity;
+
+      for (const p of points) {
+        minX = Math.min(minX, p.x);
+        maxX = Math.max(maxX, p.x);
+        minY = Math.min(minY, p.y);
+        maxY = Math.max(maxY, p.y);
+      }
+
+      const spanX = Math.max(maxX - minX, 1e-6);
+      const spanY = Math.max(maxY - minY, 1e-6);
+      const k = Math.min((boxW - 2 * pad) / spanX, (boxH - 2 * pad) / spanY);
+      const midX = (minX + maxX) / 2;
+      const midY = (minY + maxY) / 2;
+      const cx = x + boxW / 2;
+      const cy = y + boxH / 2;
+
+      const toHud = (p) => ({
+        x: cx + (p.x - midX) * k,
+        y: cy + (p.y - midY) * k
+      });
+
+      const cO = toHud(O);
+      const cE = toHud(E);
+      const cN = toHud(N);
+      const cU = toHud(U);
+
+      ctxIso.save();
+
+      ctxIso.fillStyle = "rgba(2,6,23,.88)";
+      ctxIso.strokeStyle = "rgba(148,163,184,.18)";
+      ctxIso.lineWidth = 1;
+      roundRectPath(ctxIso, x, y, boxW, boxH, 10 * s);
+      ctxIso.fill();
+      ctxIso.stroke();
+
+      ctxIso.lineCap = "round";
+      ctxIso.lineJoin = "round";
+      ctxIso.lineWidth = 2.2 * s;
+
+      ctxIso.strokeStyle = "#38bdf8";
+      ctxIso.beginPath();
+      ctxIso.moveTo(cO.x, cO.y);
+      ctxIso.lineTo(cE.x, cE.y);
+      ctxIso.stroke();
+
+      ctxIso.strokeStyle = "#22c55e";
+      ctxIso.beginPath();
+      ctxIso.moveTo(cO.x, cO.y);
+      ctxIso.lineTo(cN.x, cN.y);
+      ctxIso.stroke();
+
+      ctxIso.strokeStyle = "#f97316";
+      ctxIso.beginPath();
+      ctxIso.moveTo(cO.x, cO.y);
+      ctxIso.lineTo(cU.x, cU.y);
+      ctxIso.stroke();
+
+      ctxIso.font = `${10 * s}px system-ui`;
+      ctxIso.textBaseline = "middle";
+      ctxIso.textAlign = "left";
+
+      function label(text, tx, ty) {
+        const padX = 4 * s;
+        const tw = ctxIso.measureText(text).width;
+        const bw = tw + padX * 2;
+        const bh = 14 * s;
+
+        ctxIso.fillStyle = "rgba(2,6,23,.90)";
+        ctxIso.strokeStyle = "rgba(148,163,184,.16)";
+        ctxIso.lineWidth = 1;
+        roundRectPath(ctxIso, tx - padX, ty - bh / 2, bw, bh, 6 * s);
+        ctxIso.fill();
+        ctxIso.stroke();
+
+        ctxIso.fillStyle = "#e5e7eb";
+        ctxIso.fillText(text, tx, ty);
+      }
+
+      label("UP", cU.x + 6 * s, cU.y);
+      label("E", cE.x + 6 * s, cE.y);
+      label("N", cN.x - 16 * s, cN.y);
+
+      ctxIso.restore();
+    }
+
+    function drawIsoGrid(ctx, pts3d, toCanvas, w, h) {
+      if (!ctx || !pts3d || pts3d.length < 1) return;
+
+      let minX = Infinity;
+      let maxX = -Infinity;
+      let minY = Infinity;
+      let maxY = -Infinity;
+
+      for (const p of pts3d) {
+        minX = Math.min(minX, p.x);
+        maxX = Math.max(maxX, p.x);
+        minY = Math.min(minY, p.y);
+        maxY = Math.max(maxY, p.y);
+      }
+
+      const k = state.view.baseScale * state.view.zoom;
+      const spanProjX = w / Math.max(k, 1e-6);
+      const spanProjY = h / Math.max(k, 1e-6);
+      const extra = Math.max(spanProjX, spanProjY) * 1.4;
+
+      const x0 = minX - extra;
+      const x1 = maxX + extra;
+      const y0 = minY - extra;
+      const y1 = maxY + extra;
+
+      const minor = 50;
+      const majorEvery = 5;
+
+      const drawFamily = (drawLineFn, spacing, alphaMinor, alphaMajor) => {
+        for (let pass = 0; pass < 2; pass++) {
+          const isMajor = pass === 1;
+          const alpha = isMajor ? alphaMajor : alphaMinor;
+          const width = isMajor ? 1.4 : 1.0;
+
+          ctx.strokeStyle = `rgba(147,197,253,${alpha})`;
+          ctx.lineWidth = width;
+          drawLineFn(isMajor, spacing);
+        }
+      };
+
+      drawFamily((isMajor, step) => {
+        const start = Math.floor(x0 / step);
+        const end = Math.ceil(x1 / step);
+
+        for (let i = start; i <= end; i++) {
+          if (isMajor && i % majorEvery !== 0) continue;
+          if (!isMajor && i % majorEvery === 0) continue;
+
+          const x = i * step;
+          const a = toCanvas(projectIso({ x, y: y0, z: 0 }));
+          const b = toCanvas(projectIso({ x, y: y1, z: 0 }));
+
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+      }, minor, 0.08, 0.16);
+
+      drawFamily((isMajor, step) => {
+        const start = Math.floor(y0 / step);
+        const end = Math.ceil(y1 / step);
+
+        for (let i = start; i <= end; i++) {
+          if (isMajor && i % majorEvery !== 0) continue;
+          if (!isMajor && i % majorEvery === 0) continue;
+
+          const y = i * step;
+          const a = toCanvas(projectIso({ x: x0, y, z: 0 }));
+          const b = toCanvas(projectIso({ x: x1, y, z: 0 }));
+
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+      }, minor, 0.08, 0.16);
+
+      drawFamily((isMajor, step) => {
+        const cMin = x0 + y0;
+        const cMax = x1 + y1;
+        const start = Math.floor(cMin / step);
+        const end = Math.ceil(cMax / step);
+
+        for (let i = start; i <= end; i++) {
+          if (isMajor && i % majorEvery !== 0) continue;
+          if (!isMajor && i % majorEvery === 0) continue;
+
+          const c = i * step;
+          let xa = x0;
+          let ya = c - xa;
+          let xb = x1;
+          let yb = c - xb;
+
+          if (ya < y0) {
+            ya = y0;
+            xa = c - ya;
+          }
+          if (ya > y1) {
+            ya = y1;
+            xa = c - ya;
+          }
+          if (yb < y0) {
+            yb = y0;
+            xb = c - yb;
+          }
+          if (yb > y1) {
+            yb = y1;
+            xb = c - yb;
+          }
+
+          if (
+            xa < x0 - 1e-6 ||
+            xa > x1 + 1e-6 ||
+            xb < x0 - 1e-6 ||
+            xb > x1 + 1e-6
+          ) {
+            continue;
+          }
+
+          const a = toCanvas(projectIso({ x: xa, y: ya, z: 0 }));
+          const b = toCanvas(projectIso({ x: xb, y: yb, z: 0 }));
+
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+      }, minor, 0.06, 0.14);
+    }
+
+    function drawIso() {
+      if (!ctxIso) return;
+
+      if (!state.isoSteps.length) {
+        show(dom.errorIso, true);
+        dom.isoCountOut.textContent = "–";
+        dom.isoLenOut.textContent = "–";
+
+        const { w, h } = ensureCanvasDpr();
+        ctxIso.clearRect(0, 0, w, h);
+        return;
+      }
+
+      show(dom.errorIso, false);
+
+      const { verts: points3d, corners } = stepsToPointsWithCorners(state.isoSteps);
+      dom.isoCountOut.textContent = String(points3d.length);
+      dom.isoLenOut.textContent = `${polylineLength3d(points3d).toFixed(1)} mm`;
+
+      const projected = points3d.map(projectIso);
+      const { w, h } = ensureCanvasDpr();
+
+      if (!Number.isFinite(state.view.baseScale) || state.view.baseScale <= 0) {
+        fitView(false);
+      }
+
+      const toCanvas = (p) => {
+        const k = state.view.baseScale * state.view.zoom;
+        return {
+          x: state.view.baseCx + p.x * k + state.view.panX,
+          y: state.view.baseCy + p.y * k + state.view.panY
+        };
+      };
+
+      const centroid = projected.reduce(
+        (acc, p) => ({ x: acc.x + p.x, y: acc.y + p.y }),
+        { x: 0, y: 0 }
+      );
+      centroid.x /= projected.length;
+      centroid.y /= projected.length;
+
+      const centroidCanvas = toCanvas(centroid);
+
+      const outwardSignFor2D = (a, b) => {
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const L = Math.hypot(dx, dy);
+        if (L < 1e-9) return 1;
+
+        const nx = -dy / L;
+        const ny = dx / L;
+        const mx = (a.x + b.x) / 2;
+        const my = (a.y + b.y) / 2;
+        const off = 10;
+
+        const pPlus = { x: mx + nx * off, y: my + ny * off };
+        const pMinus = { x: mx - nx * off, y: my - ny * off };
+
+        const dPlus = Math.hypot(pPlus.x - centroidCanvas.x, pPlus.y - centroidCanvas.y);
+        const dMinus = Math.hypot(pMinus.x - centroidCanvas.x, pMinus.y - centroidCanvas.y);
+
+        return dPlus >= dMinus ? 1 : -1;
+      };
+
+      const dimSpread = clamp(
+        1 / Math.sqrt(Math.max(state.view.zoom, 1e-6)),
+        0.75,
+        2.2
+      );
+
+      ctxIso.clearRect(0, 0, w, h);
+      drawIsoGrid(ctxIso, points3d, toCanvas, w, h);
+      drawMiniAxes();
+
+      ctxIso.strokeStyle = "#22c55e";
+      ctxIso.lineWidth = 4;
+      ctxIso.beginPath();
+
+      const first = toCanvas(projected[0]);
+      ctxIso.moveTo(first.x, first.y);
+
+      for (let i = 1; i < projected.length; i++) {
+        const p = toCanvas(projected[i]);
+        ctxIso.lineTo(p.x, p.y);
+      }
+
+      ctxIso.stroke();
+
+      ctxIso.save();
+      ctxIso.setLineDash([6, 4]);
+      ctxIso.strokeStyle = "rgba(56,189,248,.55)";
+      ctxIso.lineWidth = 2;
+
+      for (const c of corners) {
+        if (!c) continue;
+
+        const a = toCanvas(projectIso(c.start));
+        const mid = toCanvas(projectIso(c.corner));
+        const b = toCanvas(projectIso(c.end));
+
+        ctxIso.beginPath();
+        ctxIso.moveTo(a.x, a.y);
+        ctxIso.lineTo(mid.x, mid.y);
+        ctxIso.lineTo(b.x, b.y);
+        ctxIso.stroke();
+      }
+
+      ctxIso.restore();
+
+      for (let i = 0; i < projected.length; i++) {
+        const c = toCanvas(projected[i]);
+        ctxIso.beginPath();
+
+        if (i === 0) {
+          ctxIso.fillStyle = "#e5e7eb";
+          ctxIso.arc(c.x, c.y, 5, 0, Math.PI * 2);
+          ctxIso.fill();
+          ctxIso.strokeStyle = "rgba(248,250,252,.7)";
+          ctxIso.lineWidth = 2;
+          ctxIso.stroke();
+        } else if (i === projected.length - 1) {
+          ctxIso.fillStyle = "#f97316";
+          ctxIso.arc(c.x, c.y, 5, 0, Math.PI * 2);
+          ctxIso.fill();
+          ctxIso.strokeStyle = "rgba(2,6,23,.8)";
+          ctxIso.lineWidth = 2;
+          ctxIso.stroke();
+        } else {
+          ctxIso.fillStyle = "#e5e7eb";
+          ctxIso.arc(c.x, c.y, 3, 0, Math.PI * 2);
+          ctxIso.fill();
         }
       }
 
-      y += 2;
-      row("Bockvinklar:");
-      for(let i=1;i<pts3d.length-1;i++){
-        const a=bendAngle3D(pts3d[i-1],pts3d[i],pts3d[i+1]);
-        if(!row(`${String(i).padStart(2,"0")}: ${fmtDeg(a,1)}`)) break;
+      if (!state.showDims) return;
+
+      for (let i = 0; i < projected.length - 1; i++) {
+        const a = toCanvas(projected[i]);
+        const b = toCanvas(projected[i + 1]);
+        const step = state.isoSteps[i];
+        if (!step) continue;
+
+        const signSeg = outwardSignFor2D(a, b);
+
+        if (step.type === "OFF") {
+          drawCanvasDimCAD(ctxIso, a, b, `L ${step.mm.toFixed(1)} mm`, signSeg, {
+            color: "#e5e7eb",
+            extColor: "rgba(248,250,252,.65)",
+            offPx: 14 * dimSpread,
+            minLenPx: 26,
+            font: "12px system-ui",
+            lineW: 1.3,
+            extW: 1.0,
+            dotR: 2.2,
+            dotFill: "#e5e7eb",
+            textColor: "#e5e7eb",
+            gapPad: 5
+          });
+        } else {
+          drawCanvasDimCAD(ctxIso, a, b, `${step.mm.toFixed(1)} mm`, signSeg, {
+            color: "#e5e7eb",
+            extColor: "rgba(248,250,252,.65)",
+            offPx: 14 * dimSpread,
+            minLenPx: 26,
+            font: "12px system-ui",
+            lineW: 1.3,
+            extW: 1.0,
+            dotR: 2.2,
+            dotFill: "#e5e7eb",
+            textColor: "#e5e7eb",
+            gapPad: 5
+          });
+        }
+
+        if (step.type === "OFF" && corners[i]) {
+          const mid = toCanvas(projectIso(corners[i].corner));
+          const end = toCanvas(projectIso(corners[i].end));
+          const signOff = outwardSignFor2D(mid, end);
+
+          drawCanvasDimCAD(ctxIso, mid, end, `off ${step.off.toFixed(1)} mm`, signOff, {
+            color: "rgba(56,189,248,.95)",
+            extColor: "rgba(56,189,248,.70)",
+            offPx: 20 * dimSpread,
+            minLenPx: 28,
+            font: "12px system-ui",
+            lineW: 1.2,
+            extW: 1.0,
+            dotR: 2.0,
+            dotFill: "rgba(56,189,248,.95)",
+            textColor: "#e5e7eb",
+            gapPad: 5
+          });
+
+          const prev = state.isoSteps[i - 1];
+          if (prev && prev.type === "CARD" && sameAxisDir(prev.dir, step.dir)) {
+            const startPrev3d = points3d[i - 1];
+            const corner3d = corners[i].corner;
+
+            const A = toCanvas(projectIso(startPrev3d));
+            const B = toCanvas(projectIso(corner3d));
+            const signTot = outwardSignFor2D(A, B);
+
+            const totalToKatet = prev.mm + step.P;
+
+            drawCanvasDimCAD(ctxIso, A, B, `tot ${totalToKatet.toFixed(1)} mm`, signTot, {
+              color: "rgba(250,204,21,.95)",
+              extColor: "rgba(250,204,21,.70)",
+              offPx: 26 * dimSpread,
+              minLenPx: 30,
+              font: "12px system-ui",
+              lineW: 1.15,
+              extW: 1.0,
+              dotR: 2.0,
+              dotFill: "rgba(250,204,21,.95)",
+              textColor: "#e5e7eb",
+              gapPad: 5
+            });
+          }
+        }
+      }
+    }
+
+    // ------------------------------------------------------------
+    // ISO interactions
+    // ------------------------------------------------------------
+    function addCardinalStep(dir) {
+      const mm = readNumber(dom.stepMmInput);
+      if (!Number.isFinite(mm) || mm <= 0) return;
+
+      state.isoSteps.push({ type: "CARD", dir, mm });
+      renderStepsList();
+      syncTextareaFromSteps();
+      fitView(true);
+      drawIso();
+    }
+
+    function addOffsetStep(dir) {
+      const values = validateOffsetInputs();
+      if (!values) {
+        show(dom.errorOffset, true);
+        return;
       }
 
-      const now = new Date();
-      const name = `ISO-ritning_${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}.pdf`;
-      doc.save(name);
+      show(dom.errorOffset, false);
 
-    }catch(err){
-      console.error("PDF-export fel:", err);
-      alert("PDF-export kraschade: " + (err?.message || err));
+      const step = buildOffsetStep(dir, values.ang, values.off);
+      if (!step) {
+        show(dom.errorOffset, true);
+        return;
+      }
+
+      state.isoSteps.push(step);
+      renderStepsList();
+      syncTextareaFromSteps();
+      fitView(true);
+      drawIso();
     }
-  }
 
-  if(exportPdfBtn) exportPdfBtn.onclick=exportIsoPdf;
+    function initIsoControls() {
+      on(dom.offsetEnabled, "change", () => {
+        show(dom.offsetPanel, dom.offsetEnabled.checked);
+        show(dom.errorOffset, false);
+      });
 
-  // init
-  calculateHeightAngle();
-  isoSteps=parseSteps(points3dInput.value)||[];
-  renderStepsList();
-  ensureCanvasDpr();
-  fitView(false);
-  drawIso();
-</script>
+      on(dom.dimsEnabled, "change", () => {
+        state.showDims = !!dom.dimsEnabled.checked;
+        drawIso();
+      });
+
+      dom.stepButtons.forEach((btn) => {
+        on(btn, "click", () => {
+          const dir = btn.dataset.dir;
+
+          if (!dom.offsetEnabled.checked) {
+            addCardinalStep(dir);
+            return;
+          }
+
+          addOffsetStep(dir);
+        });
+      });
+
+      on(dom.undoStepBtn, "click", () => {
+        state.isoSteps.pop();
+        renderStepsList();
+        syncTextareaFromSteps();
+        fitView(true);
+        drawIso();
+      });
+
+      on(dom.clearStepsBtn, "click", () => {
+        state.isoSteps = [];
+        renderStepsList();
+        syncTextareaFromSteps();
+        dom.isoCountOut.textContent = "–";
+        dom.isoLenOut.textContent = "–";
+        show(dom.errorIso, false);
+        show(dom.errorOffset, false);
+        resetView();
+      });
+
+      on(dom.points3dInput, "input", () => {
+        const parsed = parseSteps(dom.points3dInput.value);
+
+        if (!parsed) {
+          show(dom.errorIso, true);
+          return;
+        }
+
+        show(dom.errorIso, false);
+        state.isoSteps = parsed;
+        renderStepsList();
+        fitView(true);
+        drawIso();
+      });
+
+      on(dom.rotateViewBtn, "click", () => {
+        state.view.rot = state.view.rot - 1;
+        fitView(true);
+        drawIso();
+      });
+
+      on(dom.resetViewBtn, "click", resetView);
+    }
+
+    function getCanvasPointFromEvent(e) {
+      const rect = dom.isoCanvas.getBoundingClientRect();
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+    }
+
+    function getPointerCenterAndDistance() {
+      const pts = Array.from(state.pointers.values());
+      if (pts.length < 2) return null;
+
+      const a = pts[0];
+      const b = pts[1];
+
+      return {
+        cx: (a.x + b.x) / 2,
+        cy: (a.y + b.y) / 2,
+        dist: Math.hypot(b.x - a.x, b.y - a.y)
+      };
+    }
+
+    function initCanvasInteractions() {
+      on(
+        dom.isoCanvas,
+        "wheel",
+        (e) => {
+          e.preventDefault();
+
+          ensureCanvasDpr();
+
+          const p = getCanvasPointFromEvent(e);
+          const oldZoom = state.view.zoom;
+          const zoomFactor = Math.exp((-e.deltaY) * 0.0015);
+          const newZoom = clamp(oldZoom * zoomFactor, 0.2, 8);
+
+          const kOld = state.view.baseScale * oldZoom;
+          const kNew = state.view.baseScale * newZoom;
+
+          const wx = (p.x - state.view.baseCx - state.view.panX) / kOld;
+          const wy = (p.y - state.view.baseCy - state.view.panY) / kOld;
+
+          state.view.zoom = newZoom;
+          state.view.panX = p.x - state.view.baseCx - wx * kNew;
+          state.view.panY = p.y - state.view.baseCy - wy * kNew;
+
+          drawIso();
+        },
+        { passive: false }
+      );
+
+      on(dom.isoCanvas, "pointerdown", (e) => {
+        dom.isoCanvas.setPointerCapture(e.pointerId);
+
+        const p = getCanvasPointFromEvent(e);
+        state.pointers.set(e.pointerId, p);
+
+        if (state.pointers.size === 1) {
+          state.dragStart = {
+            x: p.x,
+            y: p.y,
+            panX: state.view.panX,
+            panY: state.view.panY
+          };
+          state.pinchStart = null;
+        } else if (state.pointers.size === 2) {
+          const cd = getPointerCenterAndDistance();
+          if (!cd) return;
+
+          state.pinchStart = {
+            dist: cd.dist,
+            zoom: state.view.zoom,
+            panX: state.view.panX,
+            panY: state.view.panY
+          };
+          state.dragStart = null;
+        }
+      });
+
+      on(dom.isoCanvas, "pointermove", (e) => {
+        if (!state.pointers.has(e.pointerId)) return;
+
+        const p = getCanvasPointFromEvent(e);
+        state.pointers.set(e.pointerId, p);
+
+        if (state.pointers.size === 1 && state.dragStart) {
+          state.view.panX = state.dragStart.panX + (p.x - state.dragStart.x);
+          state.view.panY = state.dragStart.panY + (p.y - state.dragStart.y);
+          drawIso();
+          return;
+        }
+
+        if (state.pointers.size === 2 && state.pinchStart) {
+          const cd = getPointerCenterAndDistance();
+          if (!cd) return;
+
+          const zoomFactor = cd.dist / Math.max(state.pinchStart.dist, 1e-6);
+          const newZoom = clamp(state.pinchStart.zoom * zoomFactor, 0.2, 8);
+          const center = { x: cd.cx, y: cd.cy };
+
+          const kOld = state.view.baseScale * state.pinchStart.zoom;
+          const kNew = state.view.baseScale * newZoom;
+
+          const wx = (center.x - state.view.baseCx - state.pinchStart.panX) / kOld;
+          const wy = (center.y - state.view.baseCy - state.pinchStart.panY) / kOld;
+
+          state.view.zoom = newZoom;
+          state.view.panX = center.x - state.view.baseCx - wx * kNew;
+          state.view.panY = center.y - state.view.baseCy - wy * kNew;
+
+          drawIso();
+        }
+      });
+
+      const endPointer = (e) => {
+        if (!state.pointers.has(e.pointerId)) return;
+
+        state.pointers.delete(e.pointerId);
+
+        if (state.pointers.size === 0) {
+          state.dragStart = null;
+          state.pinchStart = null;
+          return;
+        }
+
+        if (state.pointers.size === 1) {
+          const remaining = Array.from(state.pointers.values())[0];
+          state.dragStart = {
+            x: remaining.x,
+            y: remaining.y,
+            panX: state.view.panX,
+            panY: state.view.panY
+          };
+          state.pinchStart = null;
+        }
+      };
+
+      ["pointerup", "pointercancel", "pointerleave"].forEach((eventName) => {
+        on(dom.isoCanvas, eventName, endPointer);
+      });
+
+      on(window, "resize", () => {
+        if (!dom.modeIso3d.classList.contains("hidden")) {
+          fitView(true);
+          drawIso();
+        }
+      });
+    }
+
+    // ------------------------------------------------------------
+    // PDF export helpers
+    // ------------------------------------------------------------
+    function getJsPDFClass() {
+      if (window.jspdf && window.jspdf.jsPDF) return window.jspdf.jsPDF;
+      if (window.jsPDF) return window.jsPDF;
+      return null;
+    }
+
+    function fmtMm(v, d = 1) {
+      return Number.isFinite(v) ? `${v.toFixed(d)} mm` : "–";
+    }
+
+    function fmtDeg(v, d = 1) {
+      return Number.isFinite(v) ? `${v.toFixed(d)}°` : "–";
+    }
+
+    function vec3(a, b) {
+      return { x: b.x - a.x, y: b.y - a.y, z: b.z - a.z };
+    }
+
+    function len3(v) {
+      return Math.hypot(v.x, v.y, v.z);
+    }
+
+    function dot3(a, b) {
+      return a.x * b.x + a.y * b.y + a.z * b.z;
+    }
+
+    function norm3(v) {
+      const L = len3(v);
+      if (L < 1e-9) return { x: 0, y: 0, z: 0, L: 0 };
+      return { x: v.x / L, y: v.y / L, z: v.z / L, L };
+    }
+
+    function bendAngle3D(prev, cur, next) {
+      const u = norm3(vec3(prev, cur));
+      const v = norm3(vec3(cur, next));
+
+      if (u.L < 1e-9 || v.L < 1e-9) return NaN;
+
+      let c = dot3(u, v);
+      c = Math.max(-1, Math.min(1, c));
+      return Math.acos(c) * 180 / Math.PI;
+    }
+
+    function pdfArrowHead(doc, x, y, angRad, size, color = [0, 0, 0]) {
+      const left = angRad + Math.PI * 0.85;
+      const right = angRad - Math.PI * 0.85;
+
+      const x1 = x + Math.cos(left) * size;
+      const y1 = y + Math.sin(left) * size;
+      const x2 = x + Math.cos(right) * size;
+      const y2 = y + Math.sin(right) * size;
+
+      doc.setFillColor(...color);
+      if (typeof doc.triangle === "function") {
+        doc.triangle(x, y, x1, y1, x2, y2, "F");
+      } else {
+        doc.setDrawColor(...color);
+        doc.line(x, y, x1, y1);
+        doc.line(x, y, x2, y2);
+      }
+    }
+
+    function outwardSignFor2DProjected(a, b, centroid) {
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const L = Math.hypot(dx, dy);
+      if (L < 1e-9) return 1;
+
+      const nx = -dy / L;
+      const ny = dx / L;
+      const mx = (a.x + b.x) / 2;
+      const my = (a.y + b.y) / 2;
+      const off = 10;
+
+      const pPlus = { x: mx + nx * off, y: my + ny * off };
+      const pMinus = { x: mx - nx * off, y: my - ny * off };
+
+      const dPlus = Math.hypot(pPlus.x - centroid.x, pPlus.y - centroid.y);
+      const dMinus = Math.hypot(pMinus.x - centroid.x, pMinus.y - centroid.y);
+
+      return dPlus >= dMinus ? 1 : -1;
+    }
+
+    function drawPdfDimCAD(doc, a, b, text, outwardSign, opts = {}) {
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const segL = Math.hypot(dx, dy);
+      if (segL < 1e-6) return;
+
+      const ux = dx / segL;
+      const uy = dy / segL;
+      const nx = -uy;
+      const ny = ux;
+
+      const off = opts.offPx ?? 10;
+      const ex = nx * off * outwardSign;
+      const ey = ny * off * outwardSign;
+
+      const minLen = opts.minLenPx ?? 26;
+      const need = Math.max(0, minLen - segL);
+
+      const aDim = {
+        x: a.x + ex - ux * (need / 2),
+        y: a.y + ey - uy * (need / 2)
+      };
+
+      const bDim = {
+        x: b.x + ex + ux * (need / 2),
+        y: b.y + ey + uy * (need / 2)
+      };
+
+      const ang = Math.atan2(bDim.y - aDim.y, bDim.x - aDim.x);
+
+      doc.setDrawColor(...(opts.extColor ?? [160, 160, 160]));
+      doc.setLineWidth(opts.extW ?? 0.15);
+      doc.line(a.x, a.y, aDim.x, aDim.y);
+      doc.line(b.x, b.y, bDim.x, bDim.y);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(opts.fontSize ?? 8.5);
+
+      const tw = doc.getTextWidth(text);
+      const gap = tw / 2 + (opts.gapPad ?? 1.8);
+
+      const mx = (aDim.x + bDim.x) / 2;
+      const my = (aDim.y + bDim.y) / 2;
+
+      const gx1 = {
+        x: mx - Math.cos(ang) * gap,
+        y: my - Math.sin(ang) * gap
+      };
+
+      const gx2 = {
+        x: mx + Math.cos(ang) * gap,
+        y: my + Math.sin(ang) * gap
+      };
+
+      doc.setDrawColor(...(opts.color ?? [0, 0, 0]));
+      doc.setLineWidth(opts.lineW ?? 0.2);
+      doc.line(aDim.x, aDim.y, gx1.x, gx1.y);
+      doc.line(gx2.x, gx2.y, bDim.x, bDim.y);
+
+      const r = opts.dotR ?? 0.55;
+      doc.setFillColor(...(opts.dotFill ?? [0, 0, 0]));
+      doc.circle(aDim.x, aDim.y, r, "F");
+      doc.circle(bDim.x, bDim.y, r, "F");
+
+      let rot = ang * 180 / Math.PI;
+      if (rot > 90 || rot < -90) rot += 180;
+
+      doc.setTextColor(...(opts.textColor ?? [0, 0, 0]));
+      doc.text(text, mx, my + (opts.textNudge ?? 0.6), {
+        angle: rot,
+        align: "center"
+      });
+    }
+
+    function drawPdfAngleLeader(doc, vertexIndex, pts3d, pts2, centroid) {
+      const i = vertexIndex;
+      if (i <= 0 || i >= pts2.length - 1) return;
+
+      const ang3d = bendAngle3D(pts3d[i - 1], pts3d[i], pts3d[i + 1]);
+      if (!Number.isFinite(ang3d) || ang3d < 1 || ang3d > 179) return;
+
+      const p = pts2[i];
+
+      let vx = p.x - centroid.x;
+      let vy = p.y - centroid.y;
+      const vL = Math.hypot(vx, vy) || 1;
+      vx /= vL;
+      vy /= vL;
+
+      const text = `${ang3d.toFixed(1)}°`;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(0, 0, 0);
+
+      const radii = [10, 14, 18, 22, 28, 36, 46, 58];
+
+      for (const r of radii) {
+        const ax = p.x + vx * r;
+        const ay = p.y + vy * r;
+
+        const startX = ax - vx * 4.0;
+        const startY = ay - vy * 2.2;
+
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.18);
+        doc.line(startX, startY, p.x, p.y);
+
+        const angLine = Math.atan2(p.y - startY, p.x - startX);
+        pdfArrowHead(doc, p.x, p.y, angLine, 1.5, [0, 0, 0]);
+
+        doc.text(text, ax, ay + 1.2, { align: "center" });
+        return;
+      }
+    }
+
+    function exportIsoPdf() {
+      try {
+        if (!state.isoSteps.length) {
+          alert("Inga steg att exportera.");
+          return;
+        }
+
+        const JsPDF = getJsPDFClass();
+        if (!JsPDF) {
+          alert("jsPDF hittades inte. Kontrollera att CDN-scriptet laddas.");
+          return;
+        }
+
+        const steps = state.isoSteps;
+        const { verts: pts3d, corners } = stepsToPointsWithCorners(steps);
+
+        const doc = new JsPDF({
+          unit: "mm",
+          format: "a4",
+          orientation: "landscape"
+        });
+
+        const pageW = doc.internal.pageSize.getWidth();
+        const pageH = doc.internal.pageSize.getHeight();
+
+        const margin = 10;
+        const tableW = 95;
+        const gap = 8;
+
+        const drawX0 = margin;
+        const drawY0 = margin;
+        const drawW = pageW - margin * 2 - tableW - gap;
+        const drawH = pageH - margin * 2;
+
+        const tableX0 = drawX0 + drawW + gap;
+        const tableY0 = margin;
+
+        const projected = pts3d.map(projectIso);
+
+        let minX = Infinity;
+        let maxX = -Infinity;
+        let minY = Infinity;
+        let maxY = -Infinity;
+
+        for (const p of projected) {
+          minX = Math.min(minX, p.x);
+          maxX = Math.max(maxX, p.x);
+          minY = Math.min(minY, p.y);
+          maxY = Math.max(maxY, p.y);
+        }
+
+        const spanX = Math.max(maxX - minX, 1e-9);
+        const spanY = Math.max(maxY - minY, 1e-9);
+        const pad = 10;
+        const scale = Math.min((drawW - 2 * pad) / spanX, (drawH - 2 * pad) / spanY);
+
+        const midX = (minX + maxX) / 2;
+        const midY = (minY + maxY) / 2;
+        const cx = drawX0 + drawW / 2;
+        const cy = drawY0 + drawH / 2;
+
+        const toPdf = (p) => ({
+          x: cx + (p.x - midX) * scale,
+          y: cy + (p.y - midY) * scale
+        });
+
+        const pts2 = projected.map(toPdf);
+
+        const centroid = pts2.reduce(
+          (acc, p) => ({ x: acc.x + p.x, y: acc.y + p.y }),
+          { x: 0, y: 0 }
+        );
+        centroid.x /= pts2.length;
+        centroid.y /= pts2.length;
+
+        const dimSpread = clamp(
+          1 / Math.sqrt(Math.max(state.view.zoom, 1e-6)),
+          0.75,
+          2.2
+        );
+
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.35);
+        doc.rect(drawX0, drawY0, drawW, drawH);
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+        doc.text("ISO-ritning", drawX0 + 4, drawY0 + 6);
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.text(`Punkter: ${pts3d.length}`, drawX0 + 4, drawY0 + 11);
+        doc.text(`Total längd (3D): ${polylineLength3d(pts3d).toFixed(1)} mm`, drawX0 + 4, drawY0 + 15);
+        doc.text(`Vy-rotation: ${(((state.view.rot % 4) + 4) % 4) * 90}°`, drawX0 + 4, drawY0 + 19);
+
+        doc.setDrawColor(16, 120, 60);
+        doc.setLineWidth(1.1);
+        for (let i = 1; i < pts2.length; i++) {
+          doc.line(pts2[i - 1].x, pts2[i - 1].y, pts2[i].x, pts2[i].y);
+        }
+
+        doc.setDrawColor(56, 189, 248);
+        doc.setLineWidth(0.5);
+        if (typeof doc.setLineDash === "function") doc.setLineDash([2.2, 1.6], 0);
+
+        for (const c of corners) {
+          if (!c) continue;
+
+          const a = toPdf(projectIso(c.start));
+          const mid = toPdf(projectIso(c.corner));
+          const b = toPdf(projectIso(c.end));
+
+          doc.line(a.x, a.y, mid.x, mid.y);
+          doc.line(mid.x, mid.y, b.x, b.y);
+        }
+
+        if (typeof doc.setLineDash === "function") doc.setLineDash([], 0);
+
+        for (let i = 0; i < pts2.length; i++) {
+          const p = pts2[i];
+
+          if (i === 0) doc.setFillColor(0, 0, 0);
+          else if (i === pts2.length - 1) doc.setFillColor(230, 126, 34);
+          else doc.setFillColor(60, 60, 60);
+
+          doc.circle(p.x, p.y, i === 0 || i === pts2.length - 1 ? 2.0 : 1.4, "F");
+        }
+
+        for (let i = 0; i < pts2.length - 1; i++) {
+          const a = pts2[i];
+          const b = pts2[i + 1];
+          const step = steps[i];
+          if (!step) continue;
+
+          const signSeg = outwardSignFor2DProjected(a, b, centroid);
+
+          if (step.type === "OFF") {
+            drawPdfDimCAD(doc, a, b, `L ${step.mm.toFixed(1)} mm`, signSeg, {
+              color: [0, 0, 0],
+              extColor: [120, 120, 120],
+              offPx: 14 * dimSpread,
+              minLenPx: 26,
+              fontSize: 8.5,
+              lineW: 0.2,
+              extW: 0.15,
+              dotR: 0.55,
+              dotFill: [0, 0, 0],
+              textColor: [0, 0, 0],
+              gapPad: 1.8
+            });
+          } else {
+            drawPdfDimCAD(doc, a, b, `${step.mm.toFixed(1)} mm`, signSeg, {
+              color: [0, 0, 0],
+              extColor: [120, 120, 120],
+              offPx: 14 * dimSpread,
+              minLenPx: 26,
+              fontSize: 8.5,
+              lineW: 0.2,
+              extW: 0.15,
+              dotR: 0.55,
+              dotFill: [0, 0, 0],
+              textColor: [0, 0, 0],
+              gapPad: 1.8
+            });
+          }
+
+          if (step.type === "OFF" && corners[i]) {
+            const mid = toPdf(projectIso(corners[i].corner));
+            const end = toPdf(projectIso(corners[i].end));
+            const signOff = outwardSignFor2DProjected(mid, end, centroid);
+
+            drawPdfDimCAD(doc, mid, end, `off ${step.off.toFixed(1)} mm`, signOff, {
+              color: [56, 189, 248],
+              extColor: [56, 189, 248],
+              offPx: 20 * dimSpread,
+              minLenPx: 28,
+              fontSize: 8.5,
+              lineW: 0.2,
+              extW: 0.15,
+              dotR: 0.55,
+              dotFill: [56, 189, 248],
+              textColor: [0, 0, 0],
+              gapPad: 1.8
+            });
+
+            const prev = steps[i - 1];
+            if (prev && prev.type === "CARD" && sameAxisDir(prev.dir, step.dir)) {
+              const startPrev3d = pts3d[i - 1];
+              const corner3d = corners[i].corner;
+
+              const A = toPdf(projectIso(startPrev3d));
+              const B = toPdf(projectIso(corner3d));
+              const signTot = outwardSignFor2DProjected(A, B, centroid);
+
+              const totalToKatet = prev.mm + step.P;
+
+              drawPdfDimCAD(doc, A, B, `tot ${totalToKatet.toFixed(1)} mm`, signTot, {
+                color: [250, 204, 21],
+                extColor: [250, 204, 21],
+                offPx: 26 * dimSpread,
+                minLenPx: 30,
+                fontSize: 8.5,
+                lineW: 0.2,
+                extW: 0.15,
+                dotR: 0.55,
+                dotFill: [250, 204, 21],
+                textColor: [0, 0, 0],
+                gapPad: 1.8
+              });
+            }
+          }
+        }
+
+        for (let i = 1; i < pts2.length - 1; i++) {
+          drawPdfAngleLeader(doc, i, pts3d, pts2, centroid);
+        }
+
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.35);
+        doc.rect(tableX0, tableY0, tableW, drawH);
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.text("Mått & vinklar", tableX0 + 4, tableY0 + 7);
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+
+        let y = tableY0 + 13;
+        const lineHeight = 4.2;
+
+        const row = (text) => {
+          if (y > tableY0 + drawH - 6) return false;
+          doc.text(text, tableX0 + 4, y);
+          y += lineHeight;
+          return true;
+        };
+
+        row("Steg:");
+        for (let i = 0; i < steps.length; i++) {
+          const step = steps[i];
+          const idx = String(i + 1).padStart(2, "0");
+
+          if (step.type === "CARD") {
+            if (!row(`${idx}. ${step.dir}  ${fmtMm(step.mm, 1)}`)) break;
+          } else {
+            if (!row(`${idx}. O ${step.dir}  v:${fmtDeg(step.ang, 1)}  off:${fmtMm(step.off, 1)}`)) break;
+            if (!row(`    → L:${fmtMm(step.mm, 1)}  proj:${fmtMm(step.P, 1)}`)) break;
+          }
+        }
+
+        y += 2;
+        row("Bockvinklar:");
+        for (let i = 1; i < pts3d.length - 1; i++) {
+          const angle = bendAngle3D(pts3d[i - 1], pts3d[i], pts3d[i + 1]);
+          if (!row(`${String(i).padStart(2, "0")}: ${fmtDeg(angle, 1)}`)) break;
+        }
+
+        const now = new Date();
+        const fileName =
+          `ISO-ritning_${now.getFullYear()}-` +
+          `${String(now.getMonth() + 1).padStart(2, "0")}-` +
+          `${String(now.getDate()).padStart(2, "0")}.pdf`;
+
+        doc.save(fileName);
+      } catch (err) {
+        console.error("PDF-export fel:", err);
+        alert("PDF-export kraschade: " + (err?.message || err));
+      }
+    }
+
+    function initPdfExport() {
+      if (dom.exportPdfBtn) {
+        dom.exportPdfBtn.onclick = exportIsoPdf;
+      }
+    }
+
+    // ------------------------------------------------------------
+    // Init
+    // ------------------------------------------------------------
+    function initApp() {
+      initTabs();
+      initHeightAngle();
+      initIsoControls();
+      initCanvasInteractions();
+      initPdfExport();
+
+      calculateHeightAngle();
+
+      state.isoSteps = parseSteps(dom.points3dInput.value) || [];
+      renderStepsList();
+      ensureCanvasDpr();
+      fitView(false);
+      drawIso();
+    }
+
+    initApp();
+  </script>
 </body>
 </html>
